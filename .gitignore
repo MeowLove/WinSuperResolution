@@ -10,3 +10,7 @@
 *.user
 *.suo
 *.pdb
+
+# Local task coordination and temporary build bootstrap files
+/handoff/
+/work/

@@ -8,4 +8,13 @@ The application distinguishes the virtual-resolution capability stored in the di
 
 ## Development status
 
-The repository currently contains the v2 implementation in progress. The legacy v1 source and binaries are preserved by the `legacy-v1.0-source` Git tag.
+The repository contains the v2 implementation baseline. It provides:
+
+- recursive historical registry configuration scanning with cautious live-display correlation;
+- separate `VirtualResolutionCapability`, `CurrentDisplayMode`, and `CurrentPerMonitorScale` models;
+- registry export, value-level Journal, verification, and reverse-order recovery;
+- Windows-supported current-mode enumeration with `CDS_TEST`, snapshot, and 15-second confirmation/revert;
+- an explicitly guarded Experimental scale backend with manual Display Settings fallback;
+- embedded English, Simplified Chinese, and Russian resources with portable language settings beside the EXE.
+
+The legacy v1 source and binaries are preserved by the `legacy-v1.0-source` Git tag. The application does not claim to provide AI image upscaling or to reproduce the complete macOS display stack.

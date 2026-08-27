@@ -4,90 +4,160 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text;
 using WinSuperResolution.Models;
+using WinSuperResolution.Resources;
 using WinSuperResolution.Services;
 
 namespace WinSuperResolution.ViewModels
 {
-    internal sealed class MainViewModel : INotifyPropertyChanged
+    public sealed class MainViewModel : INotifyPropertyChanged
     {
         private readonly DiagnosticsService _diagnostics;
         private readonly DisplayCatalogService _catalogService;
         private readonly ResolutionPlanService _planService;
+        private readonly RegistryCapabilityService _capabilityService;
+        private readonly DisplayModeService _displayModeService;
+        private readonly ExperimentalScaleService _scaleService;
+        private readonly PortableSettingsService _settingsService;
         private DisplayConfigurationRecord _selectedRecord;
+        private DisplayMode _selectedMode;
         private int _selectedMagnification;
+        private string _selectedLanguage;
         private string _statusText;
         private string _planSummary;
+        private string _scaleAvailability;
+        private LocalizedStrings _ui;
 
-        internal MainViewModel()
+        public MainViewModel()
         {
             _diagnostics = new DiagnosticsService();
+            JournalService journals = new JournalService();
             _catalogService = new DisplayCatalogService(_diagnostics);
             _planService = new ResolutionPlanService();
+            _capabilityService = new RegistryCapabilityService(journals, _diagnostics);
+            _displayModeService = new DisplayModeService(journals);
+            _scaleService = new ExperimentalScaleService(journals);
+            _settingsService = new PortableSettingsService();
             Records = new ObservableCollection<DisplayConfigurationRecord>();
+            CurrentModes = new ObservableCollection<DisplayMode>();
             MagnificationOptions = new List<int>();
             for (int value = 100; value <= 350; value += 10)
-            {
                 MagnificationOptions.Add(value);
-            }
-
+            Languages = Strings.SupportedCultures;
             _selectedMagnification = 150;
+            _selectedLanguage = _settingsService.LoadLanguage();
+            if (!Strings.IsSupported(_selectedLanguage))
+                _selectedLanguage = Strings.DefaultCulture;
+            _ui = Strings.ForCulture(_selectedLanguage);
             _statusText = "Ready. Refresh to scan registered display configurations.";
             _planSummary = "No plan has been built.";
+            _scaleAvailability = "Experimental scaling is unavailable until a display is selected.";
         }
 
-        internal ObservableCollection<DisplayConfigurationRecord> Records { get; private set; }
-        internal IList<int> MagnificationOptions { get; private set; }
+        public ObservableCollection<DisplayConfigurationRecord> Records { get; private set; }
+        public ObservableCollection<DisplayMode> CurrentModes { get; private set; }
+        public IList<int> MagnificationOptions { get; private set; }
+        public IList<string> Languages { get; private set; }
+        public LocalizedStrings Ui { get { return _ui; } }
 
-        internal DisplayConfigurationRecord SelectedRecord
+        public DisplayConfigurationRecord SelectedRecord
         {
             get { return _selectedRecord; }
             set
             {
                 if (_selectedRecord == value)
-                {
                     return;
-                }
-
                 _selectedRecord = value;
+                RefreshCurrentState();
                 OnPropertyChanged("SelectedRecord");
                 OnPropertyChanged("SelectedSummary");
+                OnPropertyChanged("CanManageCurrentState");
+                OnPropertyChanged("CurrentStateSummary");
             }
         }
 
-        internal int SelectedMagnification
+        public DisplayMode SelectedMode
+        {
+            get { return _selectedMode; }
+            set
+            {
+                _selectedMode = value;
+                OnPropertyChanged("SelectedMode");
+            }
+        }
+
+        public int SelectedMagnification
         {
             get { return _selectedMagnification; }
             set
             {
                 if (_selectedMagnification == value)
-                {
                     return;
-                }
-
                 _selectedMagnification = value;
                 OnPropertyChanged("SelectedMagnification");
             }
         }
 
-        internal string SelectedSummary
+        public string SelectedLanguage
+        {
+            get { return _selectedLanguage; }
+            set
+            {
+                if (!Strings.IsSupported(value) || _selectedLanguage == value)
+                    return;
+                _selectedLanguage = value;
+                _ui = Strings.ForCulture(value);
+                _settingsService.SaveLanguage(value);
+                OnPropertyChanged("SelectedLanguage");
+                OnPropertyChanged("Ui");
+            }
+        }
+
+        public string SelectedSummary
         {
             get
             {
                 if (SelectedRecord == null)
-                {
                     return "Select a registered configuration to inspect its virtual-resolution capability.";
-                }
-
-                return string.Format("{0}\nTargets: {1}\nMatch: {2}; connection: {3}\n{4}",
-                    SelectedRecord.ConfigurationKey,
+                return string.Format("{0}\nTargets: {1}\nMatch: {2}; connection: {3}\n{4}\n{5}",
+                    SelectedRecord.DisplayIdentity,
                     SelectedRecord.RegistryTargets.Count,
                     SelectedRecord.MatchStatus,
                     SelectedRecord.ConnectionStatus,
+                    SelectedRecord.CorrelationEvidence,
                     SelectedRecord.ScanWarning);
             }
         }
 
-        internal string StatusText
+        public string CurrentStateSummary
+        {
+            get
+            {
+                if (SelectedRecord == null || SelectedRecord.LiveDisplay == null)
+                    return "No exact live display is selected.";
+                LiveDisplayInfo display = SelectedRecord.LiveDisplay;
+                return string.Format("VirtualResolutionCapability: {0}; CurrentDisplayMode: {1}; CurrentPerMonitorScale: {2}.",
+                    SelectedRecord.PrimarySurfaceText,
+                    display.CurrentModeText,
+                    display.ScaleText);
+            }
+        }
+
+        public bool CanManageCurrentState
+        {
+            get { return SelectedRecord != null && SelectedRecord.CanManageCurrentState; }
+        }
+
+        public string ScaleAvailability
+        {
+            get { return _scaleAvailability; }
+            private set
+            {
+                _scaleAvailability = value;
+                OnPropertyChanged("ScaleAvailability");
+            }
+        }
+
+        public string StatusText
         {
             get { return _statusText; }
             set
@@ -97,27 +167,24 @@ namespace WinSuperResolution.ViewModels
             }
         }
 
-        internal string PlanSummary
+        public string PlanSummary
         {
             get { return _planSummary; }
-            set
+            private set
             {
                 _planSummary = value;
                 OnPropertyChanged("PlanSummary");
             }
         }
 
-        internal void Refresh()
+        public void Refresh()
         {
             try
             {
                 IList<DisplayConfigurationRecord> records = _catalogService.Scan();
                 Records.Clear();
                 foreach (DisplayConfigurationRecord record in records)
-                {
                     Records.Add(record);
-                }
-
                 SelectedRecord = Records.Count > 0 ? Records[0] : null;
                 PlanSummary = "No plan has been built.";
                 StatusText = string.Format("Read-only scan complete: {0} configuration root(s), {1} writable target(s).", Records.Count, CountTargets());
@@ -129,12 +196,12 @@ namespace WinSuperResolution.ViewModels
             }
         }
 
-        internal void BuildPlan()
+        public void BuildPlan()
         {
             try
             {
-                ResolutionPlan plan = _planService.Build(SelectedRecord, SelectedMagnification);
-                PlanSummary = plan.Summary + " Read-only preview; no registry values were changed.";
+                ResolutionPlan plan = BuildSelectedPlan();
+                PlanSummary = plan.Summary + " Preview only; no registry values were changed.";
                 StatusText = "Resolution plan built successfully.";
             }
             catch (Exception exception)
@@ -144,28 +211,122 @@ namespace WinSuperResolution.ViewModels
             }
         }
 
-        internal string BuildDiagnosticSummary()
+        public OperationResult ApplySelectedCapability()
+        {
+            try
+            {
+                OperationResult result = _capabilityService.Apply(BuildSelectedPlan());
+                StatusText = result.Message;
+                return result;
+            }
+            catch (Exception exception)
+            {
+                return new OperationResult { Succeeded = false, Message = exception.Message };
+            }
+        }
+
+        public IList<ResolutionPlan> GetSelectedCapabilityPreview()
+        {
+            return new List<ResolutionPlan> { BuildSelectedPlan() };
+        }
+
+        public OperationResult ApplyAllCapabilities()
+        {
+            try
+            {
+                List<ResolutionPlan> plans = new List<ResolutionPlan>();
+                foreach (DisplayConfigurationRecord record in Records)
+                {
+                    if (record.ValidationStatus == ValidationStatus.Ready || record.ValidationStatus == ValidationStatus.Warning)
+                        plans.Add(_planService.Build(record, SelectedMagnification));
+                }
+                OperationResult result = _capabilityService.ApplyBatch(plans);
+                StatusText = result.Message;
+                return result;
+            }
+            catch (Exception exception)
+            {
+                return new OperationResult { Succeeded = false, Message = exception.Message };
+            }
+        }
+
+        public IList<ResolutionPlan> GetAllCapabilityPreview()
+        {
+            List<ResolutionPlan> plans = new List<ResolutionPlan>();
+            foreach (DisplayConfigurationRecord record in Records)
+            {
+                if (record.ValidationStatus == ValidationStatus.Ready || record.ValidationStatus == ValidationStatus.Warning)
+                    plans.Add(_planService.Build(record, SelectedMagnification));
+            }
+            return plans;
+        }
+
+        public OperationResult RestoreLatestCapability()
+        {
+            OperationResult result = _capabilityService.RestoreLatest();
+            StatusText = result.Message;
+            return result;
+        }
+
+        public OperationResult ApplyCurrentMode()
+        {
+            if (!CanManageCurrentState)
+                return new OperationResult { Succeeded = false, Message = "Current mode requires an Active + Exact display association." };
+            OperationResult result = _displayModeService.ApplyWithSnapshot(SelectedMode);
+            StatusText = result.Message;
+            return result;
+        }
+
+        public OperationResult ConfirmCurrentMode()
+        {
+            OperationResult result = _displayModeService.ConfirmPending();
+            StatusText = result.Message;
+            return result;
+        }
+
+        public OperationResult RestoreCurrentMode()
+        {
+            OperationResult result = _displayModeService.RestorePending();
+            StatusText = result.Message;
+            Refresh();
+            return result;
+        }
+
+        public string BuildDiagnosticSummary()
         {
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine("WinSuperResolution v2 read-only diagnostic");
+            builder.AppendLine("WinSuperResolution v2 diagnostic");
             builder.AppendLine("Registered configuration roots: " + Records.Count);
             builder.AppendLine("Writable targets: " + CountTargets());
             foreach (DisplayConfigurationRecord record in Records)
-            {
-                builder.AppendLine(record.ConfigurationKey + " | " + record.PrimarySurfaceText + " | " + record.ActiveSignalText + " | " + record.ValidationStatus);
-            }
-
+                builder.AppendLine(record.ConfigurationKey + " | " + record.PrimarySurfaceText + " | " + record.ActiveSignalText + " | " + record.ValidationStatus + " | " + record.MatchStatus);
             return builder.ToString();
+        }
+
+        private ResolutionPlan BuildSelectedPlan()
+        {
+            return _planService.Build(SelectedRecord, SelectedMagnification);
+        }
+
+        private void RefreshCurrentState()
+        {
+            CurrentModes.Clear();
+            SelectedMode = null;
+            if (SelectedRecord != null && SelectedRecord.CanManageCurrentState)
+            {
+                foreach (DisplayMode mode in _displayModeService.EnumerateModes(SelectedRecord.LiveDisplay.DeviceName))
+                    CurrentModes.Add(mode);
+                if (CurrentModes.Count > 0)
+                    SelectedMode = CurrentModes[0];
+            }
+            ScaleAvailability = _scaleService.GetAvailability(SelectedRecord);
         }
 
         private int CountTargets()
         {
             int count = 0;
             foreach (DisplayConfigurationRecord record in Records)
-            {
                 count += record.RegistryTargets.Count;
-            }
-
             return count;
         }
 
@@ -175,9 +336,7 @@ namespace WinSuperResolution.ViewModels
         {
             PropertyChangedEventHandler handler = PropertyChanged;
             if (handler != null)
-            {
                 handler(this, new PropertyChangedEventArgs(propertyName));
-            }
         }
     }
 }

@@ -4,6 +4,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinSuperResolution", "src\WinSuperResolution\WinSuperResolution.csproj", "{C8EE6B1B-651B-4605-9C37-B99806A26C1F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinSuperResolution.SmokeTests", "tests\WinSuperResolution.SmokeTests\WinSuperResolution.SmokeTests.csproj", "{B3AC6C03-3C39-4701-A2F4-1E3B8D27C842}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -14,5 +16,9 @@ Global
 		{C8EE6B1B-651B-4605-9C37-B99806A26C1F}.Debug|x64.Build.0 = Debug|x64
 		{C8EE6B1B-651B-4605-9C37-B99806A26C1F}.Release|x64.ActiveCfg = Release|x64
 		{C8EE6B1B-651B-4605-9C37-B99806A26C1F}.Release|x64.Build.0 = Release|x64
+		{B3AC6C03-3C39-4701-A2F4-1E3B8D27C842}.Debug|x64.ActiveCfg = Debug|x64
+		{B3AC6C03-3C39-4701-A2F4-1E3B8D27C842}.Debug|x64.Build.0 = Debug|x64
+		{B3AC6C03-3C39-4701-A2F4-1E3B8D27C842}.Release|x64.ActiveCfg = Release|x64
+		{B3AC6C03-3C39-4701-A2F4-1E3B8D27C842}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 EndGlobal

@@ -9,7 +9,7 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>WinSuperResolution</RootNamespace>
     <AssemblyName>WinSuperResolution</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
     <TargetFrameworkProfile />
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -38,6 +38,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xaml" />
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
@@ -55,16 +56,26 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Models\DisplayConfigurationRecord.cs" />
+    <Compile Include="Models\DisplayMode.cs" />
     <Compile Include="Models\Enums.cs" />
+    <Compile Include="Models\JournalModels.cs" />
+    <Compile Include="Models\LiveDisplayInfo.cs" />
     <Compile Include="Models\ResolutionPlan.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\Strings.cs" />
     <Compile Include="Services\AppPaths.cs" />
     <Compile Include="Services\DiagnosticsService.cs" />
     <Compile Include="Services\DisplayCatalogService.cs" />
+    <Compile Include="Services\DisplayModeService.cs" />
+    <Compile Include="Services\ExperimentalScaleService.cs" />
+    <Compile Include="Services\JournalService.cs" />
+    <Compile Include="Services\LiveDisplayService.cs" />
     <Compile Include="Services\PortableSettingsService.cs" />
+    <Compile Include="Services\RegistryCapabilityService.cs" />
     <Compile Include="Services\ResolutionPlanService.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="Windows\ModeConfirmationWindow.cs" />
+    <Compile Include="Windows\CapabilityConfirmationWindow.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

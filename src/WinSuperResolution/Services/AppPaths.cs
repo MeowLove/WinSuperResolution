@@ -28,6 +28,8 @@ namespace WinSuperResolution.Services
         internal static string JournalsDirectory { get { return Path.Combine(DataRoot, "Journals"); } }
         internal static string DisplayStateDirectory { get { return Path.Combine(DataRoot, "DisplayState"); } }
         internal static string LogsDirectory { get { return Path.Combine(DataRoot, "Logs"); } }
+        internal static string LatestCapabilityJournalPath { get { return Path.Combine(JournalsDirectory, "latest-capability-journal.json"); } }
+        internal static string LatestDisplayModeSnapshotPath { get { return Path.Combine(DisplayStateDirectory, "pending-display-mode.json"); } }
 
         internal static void EnsureWritableDataDirectories()
         {

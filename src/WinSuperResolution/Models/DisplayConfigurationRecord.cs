@@ -39,6 +39,8 @@ namespace WinSuperResolution.Models
         public ValidationStatus ValidationStatus { get; set; }
         public CalculationBasis CalculationBasis { get; set; }
         public string ScanWarning { get; set; }
+        public LiveDisplayInfo LiveDisplay { get; set; }
+        public string CorrelationEvidence { get; set; }
 
         public string PrimarySurfaceText
         {
@@ -58,6 +60,21 @@ namespace WinSuperResolution.Models
         public bool HasActiveSignal
         {
             get { return ActiveSignalWidth > 0 && ActiveSignalHeight > 0; }
+        }
+
+        public bool CanManageCurrentState
+        {
+            get { return ConnectionStatus == ConnectionStatus.Active && MatchStatus == MatchStatus.Exact && LiveDisplay != null; }
+        }
+
+        public string DisplayIdentity
+        {
+            get
+            {
+                if (LiveDisplay != null && !string.IsNullOrEmpty(LiveDisplay.FriendlyName))
+                    return LiveDisplay.FriendlyName;
+                return ConfigurationKey;
+            }
         }
 
         private static string FormatSize(int width, int height)
