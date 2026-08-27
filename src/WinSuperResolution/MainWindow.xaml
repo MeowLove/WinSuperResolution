@@ -1,0 +1,66 @@
+<Window x:Class="WinSuperResolution.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WinSuperResolution" Height="720" Width="1160" MinHeight="620" MinWidth="940"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="3*" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,16">
+            <TextBlock Text="WinSuperResolution" FontSize="26" FontWeight="SemiBold" />
+            <TextBlock Text="Higher Virtual Resolution &amp; HiDPI-Style Scaling for Windows" Foreground="#4B5563" Margin="0,4,0,12" />
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Refresh" Click="RefreshButton_Click" />
+                <Button Content="Display Settings" Click="DisplaySettingsButton_Click" />
+                <Button Content="Copy Diagnostic" Click="CopyDiagnosticButton_Click" />
+            </StackPanel>
+        </StackPanel>
+
+        <GroupBox Header="Registered display configurations" Grid.Row="1" Grid.Column="0" Margin="0,0,14,0">
+            <DataGrid ItemsSource="{Binding Records}" SelectedItem="{Binding SelectedRecord, Mode=TwoWay}"
+                      AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Status" Binding="{Binding ConnectionStatus}" Width="90" />
+                    <DataGridTextColumn Header="Configuration" Binding="{Binding ConfigurationKey}" Width="*" />
+                    <DataGridTextColumn Header="Surface" Binding="{Binding PrimarySurfaceText}" Width="115" />
+                    <DataGridTextColumn Header="Signal" Binding="{Binding ActiveSignalText}" Width="115" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </GroupBox>
+
+        <GroupBox Header="Plan preview" Grid.Row="1" Grid.Column="1">
+            <Grid Margin="14">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="{Binding SelectedSummary}" TextWrapping="Wrap" FontSize="15" />
+                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,18,0,0">
+                    <TextBlock Text="Magnification:" VerticalAlignment="Center" />
+                    <ComboBox Width="110" Margin="10,0,0,0" ItemsSource="{Binding MagnificationOptions}" SelectedItem="{Binding SelectedMagnification}" />
+                    <Button Content="Build Plan" Margin="12,0,0,0" Click="BuildPlanButton_Click" />
+                </StackPanel>
+                <TextBlock Grid.Row="2" Text="{Binding PlanSummary}" TextWrapping="Wrap" Margin="0,16,0,0" />
+                <Border Grid.Row="3" Margin="0,16,0,0" Padding="12" Background="#FFF7ED" BorderBrush="#FDBA74" BorderThickness="1">
+                    <TextBlock Text="Virtual-resolution capability is not the current Windows resolution or current display scale. This first development stage is read-only." TextWrapping="Wrap" />
+                </Border>
+                <TextBlock Grid.Row="4" Text="{Binding StatusText}" VerticalAlignment="Bottom" Foreground="#374151" TextWrapping="Wrap" />
+            </Grid>
+        </GroupBox>
+
+        <StatusBar Grid.Row="2" Grid.ColumnSpan="2" Margin="0,16,0,0">
+            <StatusBarItem Content="{Binding StatusText}" />
+        </StatusBar>
+    </Grid>
+</Window>

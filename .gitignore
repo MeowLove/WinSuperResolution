@@ -4,8 +4,9 @@
 
 # Future WPF and Visual Studio local outputs
 /.vs/
-/bin/
-/obj/
+**/bin/
+**/obj/
+/artifacts/
 *.user
 *.suo
 *.pdb
