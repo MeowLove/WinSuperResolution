@@ -59,4 +59,43 @@ namespace WinSuperResolution.Models
         [DataMember] public DateTime CreatedUtc { get; set; }
         [DataMember] public bool Confirmed { get; set; }
     }
+
+    [DataContract]
+    public sealed class ScaleJournal
+    {
+        public ScaleJournal()
+        {
+            Entries = new List<ScaleJournalEntry>();
+        }
+
+        [DataMember] public string JournalId { get; set; }
+        [DataMember] public string Status { get; set; }
+        [DataMember] public DateTime CreatedUtc { get; set; }
+        [DataMember] public string UserIdentity { get; set; }
+        [DataMember] public string WindowsVersion { get; set; }
+        [DataMember] public string DisplayIdentityEvidence { get; set; }
+        [DataMember] public int OriginalScalePercent { get; set; }
+        [DataMember] public int TargetScalePercent { get; set; }
+        [DataMember] public IList<ScaleJournalEntry> Entries { get; private set; }
+    }
+
+    [DataContract]
+    public sealed class ScaleJournalEntry
+    {
+        [DataMember] public string RegistryPath { get; set; }
+        [DataMember] public string ValueName { get; set; }
+        [DataMember] public string OriginalBytes { get; set; }
+        [DataMember] public string TargetBytes { get; set; }
+    }
+
+    public sealed class ScaleCompatibilityProfile
+    {
+        public string ProfileId { get; set; }
+        public Version MinimumWindowsVersion { get; set; }
+        public Version MaximumWindowsVersion { get; set; }
+        public string Architecture { get; set; }
+        public string MonitorDeviceIdPrefix { get; set; }
+        public IList<int> AllowedScalePercentages { get; set; }
+        public bool IsVerified { get; set; }
+    }
 }

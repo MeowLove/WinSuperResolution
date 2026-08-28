@@ -88,6 +88,10 @@
                         <Button Content="{Binding Ui[ApplyMode]}" Click="ApplyModeButton_Click" IsEnabled="{Binding CanManageCurrentState}" HorizontalAlignment="Left" />
                         <TextBlock Text="{Binding Ui[ExperimentalScale]}" FontWeight="SemiBold" Margin="0,12,0,4" />
                         <TextBlock Text="{Binding ScaleAvailability}" TextWrapping="Wrap" />
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <ComboBox Width="96" ItemsSource="{Binding AvailableScalePercentages}" SelectedItem="{Binding SelectedScalePercent}" IsEnabled="{Binding CanApplyExperimentalScale}" />
+                            <Button Content="{Binding Ui[ApplyScale]}" Click="ApplyScaleButton_Click" IsEnabled="{Binding CanApplyExperimentalScale}" />
+                        </StackPanel>
                         <TextBlock Text="{Binding Ui[ScaleUnavailable]}" TextWrapping="Wrap" Foreground="#4B5563" Margin="0,4,0,0" />
                     </StackPanel>
                 </GroupBox>

@@ -20,6 +20,7 @@ namespace WinSuperResolution.ViewModels
         private readonly PortableSettingsService _settingsService;
         private DisplayConfigurationRecord _selectedRecord;
         private DisplayMode _selectedMode;
+        private int _selectedScalePercent;
         private int _selectedMagnification;
         private string _selectedLanguage;
         private string _statusText;
@@ -39,6 +40,7 @@ namespace WinSuperResolution.ViewModels
             _settingsService = new PortableSettingsService();
             Records = new ObservableCollection<DisplayConfigurationRecord>();
             CurrentModes = new ObservableCollection<DisplayMode>();
+            AvailableScalePercentages = new ObservableCollection<int>();
             MagnificationOptions = new List<int>();
             for (int value = 100; value <= 350; value += 10)
                 MagnificationOptions.Add(value);
@@ -55,6 +57,7 @@ namespace WinSuperResolution.ViewModels
 
         public ObservableCollection<DisplayConfigurationRecord> Records { get; private set; }
         public ObservableCollection<DisplayMode> CurrentModes { get; private set; }
+        public ObservableCollection<int> AvailableScalePercentages { get; private set; }
         public IList<int> MagnificationOptions { get; private set; }
         public IList<string> Languages { get; private set; }
         public LocalizedStrings Ui { get { return _ui; } }
@@ -94,6 +97,16 @@ namespace WinSuperResolution.ViewModels
                     return;
                 _selectedMagnification = value;
                 OnPropertyChanged("SelectedMagnification");
+            }
+        }
+
+        public int SelectedScalePercent
+        {
+            get { return _selectedScalePercent; }
+            set
+            {
+                _selectedScalePercent = value;
+                OnPropertyChanged("SelectedScalePercent");
             }
         }
 
@@ -145,6 +158,11 @@ namespace WinSuperResolution.ViewModels
         public bool CanManageCurrentState
         {
             get { return SelectedRecord != null && SelectedRecord.CanManageCurrentState; }
+        }
+
+        public bool CanApplyExperimentalScale
+        {
+            get { return CanManageCurrentState && AvailableScalePercentages.Count > 0 && SelectedScalePercent > 0; }
         }
 
         public string ScaleAvailability
@@ -292,6 +310,13 @@ namespace WinSuperResolution.ViewModels
             return result;
         }
 
+        public OperationResult ApplyExperimentalScale()
+        {
+            OperationResult result = _scaleService.Apply(SelectedRecord, SelectedScalePercent);
+            StatusText = result.Message;
+            return result;
+        }
+
         public string BuildDiagnosticSummary()
         {
             StringBuilder builder = new StringBuilder();
@@ -311,7 +336,9 @@ namespace WinSuperResolution.ViewModels
         private void RefreshCurrentState()
         {
             CurrentModes.Clear();
+            AvailableScalePercentages.Clear();
             SelectedMode = null;
+            SelectedScalePercent = 0;
             if (SelectedRecord != null && SelectedRecord.CanManageCurrentState)
             {
                 foreach (DisplayMode mode in _displayModeService.EnumerateModes(SelectedRecord.LiveDisplay.DeviceName))
@@ -319,7 +346,12 @@ namespace WinSuperResolution.ViewModels
                 if (CurrentModes.Count > 0)
                     SelectedMode = CurrentModes[0];
             }
+            foreach (int scale in _scaleService.GetAvailableScalePercentages(SelectedRecord))
+                AvailableScalePercentages.Add(scale);
+            if (AvailableScalePercentages.Count > 0)
+                SelectedScalePercent = AvailableScalePercentages[0];
             ScaleAvailability = _scaleService.GetAvailability(SelectedRecord);
+            OnPropertyChanged("CanApplyExperimentalScale");
         }
 
         private int CountTargets()

@@ -17,6 +17,7 @@ namespace WinSuperResolution.SmokeTests
                 TestInvalidMagnification();
                 TestEmbeddedLocalization();
                 TestLiveDisplayEnumeration();
+                TestExperimentalScaleSafetyGate();
                 TestWindowMarkupLoads();
                 Console.WriteLine("WinSuperResolution smoke tests passed.");
                 return 0;
@@ -71,6 +72,14 @@ namespace WinSuperResolution.SmokeTests
         {
             System.Collections.Generic.IList<LiveDisplayInfo> displays = new LiveDisplayService().Enumerate();
             Assert(displays != null, "Live display enumeration returned null.");
+        }
+
+        private static void TestExperimentalScaleSafetyGate()
+        {
+            ExperimentalScaleService service = new ExperimentalScaleService(new JournalService());
+            OperationResult result = service.Apply(null, 150);
+            Assert(!result.Succeeded, "Experimental scaling must refuse an unverified target.");
+            Assert(service.GetAvailableScalePercentages(null).Count == 0, "Unknown displays must not expose scale options.");
         }
 
         private static void TestWindowMarkupLoads()

@@ -91,6 +91,11 @@ namespace WinSuperResolution
             ShowResult(keep ? _viewModel.ConfirmCurrentMode() : _viewModel.RestoreCurrentMode());
         }
 
+        private void ApplyScaleButton_Click(object sender, RoutedEventArgs e)
+        {
+            ShowResult(_viewModel.ApplyExperimentalScale());
+        }
+
         private void DisplaySettingsButton_Click(object sender, RoutedEventArgs e)
         {
             try
