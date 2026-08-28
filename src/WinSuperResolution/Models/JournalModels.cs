@@ -46,6 +46,7 @@ namespace WinSuperResolution.Models
         public string Message { get; set; }
         public string JournalPath { get; set; }
         public string BackupPath { get; set; }
+        public bool RestartRequired { get; set; }
     }
 
     [DataContract]

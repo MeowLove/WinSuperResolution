@@ -26,6 +26,7 @@ namespace WinSuperResolution.ViewModels
         private string _statusText;
         private string _planSummary;
         private string _scaleAvailability;
+        private string _lastOperationSummary;
         private LocalizedStrings _ui;
 
         public MainViewModel()
@@ -50,9 +51,10 @@ namespace WinSuperResolution.ViewModels
             if (!Strings.IsSupported(_selectedLanguage))
                 _selectedLanguage = Strings.DefaultCulture;
             _ui = Strings.ForCulture(_selectedLanguage);
-            _statusText = "Ready. Refresh to scan registered display configurations.";
-            _planSummary = "No plan has been built.";
-            _scaleAvailability = "Experimental scaling is unavailable until a display is selected.";
+            _statusText = Ui["Ready"];
+            _planSummary = Ui["NoPlan"];
+            _scaleAvailability = Ui["ScaleNoSelection"];
+            _lastOperationSummary = Ui["NoOperationYet"];
         }
 
         public ObservableCollection<DisplayConfigurationRecord> Records { get; private set; }
@@ -61,6 +63,7 @@ namespace WinSuperResolution.ViewModels
         public IList<int> MagnificationOptions { get; private set; }
         public IList<string> Languages { get; private set; }
         public LocalizedStrings Ui { get { return _ui; } }
+        public string RecoveryDataPath { get { return AppPaths.DataRoot; } }
 
         public DisplayConfigurationRecord SelectedRecord
         {
@@ -122,6 +125,11 @@ namespace WinSuperResolution.ViewModels
                 _settingsService.SaveLanguage(value);
                 OnPropertyChanged("SelectedLanguage");
                 OnPropertyChanged("Ui");
+                OnPropertyChanged("SelectedSummary");
+                OnPropertyChanged("CurrentStateSummary");
+                ScaleAvailability = LocalizeScaleAvailability(_scaleService.GetAvailabilityStatus(SelectedRecord));
+                if (string.IsNullOrEmpty(LastOperationSummary) || LastOperationSummary == "No operation has been recorded in this session.")
+                    LastOperationSummary = Ui["NoOperationYet"];
             }
         }
 
@@ -130,8 +138,8 @@ namespace WinSuperResolution.ViewModels
             get
             {
                 if (SelectedRecord == null)
-                    return "Select a registered configuration to inspect its virtual-resolution capability.";
-                return string.Format("{0}\nTargets: {1}\nMatch: {2}; connection: {3}\n{4}\n{5}",
+                    return Ui["SelectConfiguration"];
+                return string.Format(Ui["SelectedSummary"],
                     SelectedRecord.DisplayIdentity,
                     SelectedRecord.RegistryTargets.Count,
                     SelectedRecord.MatchStatus,
@@ -146,9 +154,9 @@ namespace WinSuperResolution.ViewModels
             get
             {
                 if (SelectedRecord == null || SelectedRecord.LiveDisplay == null)
-                    return "No exact live display is selected.";
+                    return Ui["NoLiveDisplay"];
                 LiveDisplayInfo display = SelectedRecord.LiveDisplay;
-                return string.Format("VirtualResolutionCapability: {0}; CurrentDisplayMode: {1}; CurrentPerMonitorScale: {2}.",
+                return string.Format(Ui["CurrentStateSummary"],
                     SelectedRecord.PrimarySurfaceText,
                     display.CurrentModeText,
                     display.ScaleText);
@@ -172,6 +180,16 @@ namespace WinSuperResolution.ViewModels
             {
                 _scaleAvailability = value;
                 OnPropertyChanged("ScaleAvailability");
+            }
+        }
+
+        public string LastOperationSummary
+        {
+            get { return _lastOperationSummary; }
+            private set
+            {
+                _lastOperationSummary = value;
+                OnPropertyChanged("LastOperationSummary");
             }
         }
 
@@ -204,12 +222,12 @@ namespace WinSuperResolution.ViewModels
                 foreach (DisplayConfigurationRecord record in records)
                     Records.Add(record);
                 SelectedRecord = Records.Count > 0 ? Records[0] : null;
-                PlanSummary = "No plan has been built.";
-                StatusText = string.Format("Read-only scan complete: {0} configuration root(s), {1} writable target(s).", Records.Count, CountTargets());
+                PlanSummary = Ui["NoPlan"];
+                StatusText = string.Format(Ui["ScanComplete"], Records.Count, CountTargets());
             }
             catch (Exception exception)
             {
-                StatusText = "Scan failed: " + exception.Message;
+                StatusText = Ui["ScanFailed"] + exception.Message;
                 _diagnostics.Write(StatusText);
             }
         }
@@ -219,13 +237,13 @@ namespace WinSuperResolution.ViewModels
             try
             {
                 ResolutionPlan plan = BuildSelectedPlan();
-                PlanSummary = plan.Summary + " Preview only; no registry values were changed.";
-                StatusText = "Resolution plan built successfully.";
+                PlanSummary = plan.Summary + " " + Ui["PreviewOnly"];
+                StatusText = Ui["PlanBuilt"];
             }
             catch (Exception exception)
             {
-                PlanSummary = "Plan unavailable: " + exception.Message;
-                StatusText = "Plan validation failed.";
+                PlanSummary = Ui["PlanUnavailable"] + exception.Message;
+                StatusText = Ui["PlanValidationFailed"];
             }
         }
 
@@ -234,7 +252,7 @@ namespace WinSuperResolution.ViewModels
             try
             {
                 OperationResult result = _capabilityService.Apply(BuildSelectedPlan());
-                StatusText = result.Message;
+                RecordOperation(result);
                 return result;
             }
             catch (Exception exception)
@@ -259,7 +277,7 @@ namespace WinSuperResolution.ViewModels
                         plans.Add(_planService.Build(record, SelectedMagnification));
                 }
                 OperationResult result = _capabilityService.ApplyBatch(plans);
-                StatusText = result.Message;
+                RecordOperation(result);
                 return result;
             }
             catch (Exception exception)
@@ -282,7 +300,7 @@ namespace WinSuperResolution.ViewModels
         public OperationResult RestoreLatestCapability()
         {
             OperationResult result = _capabilityService.RestoreLatest();
-            StatusText = result.Message;
+            RecordOperation(result);
             return result;
         }
 
@@ -291,21 +309,21 @@ namespace WinSuperResolution.ViewModels
             if (!CanManageCurrentState)
                 return new OperationResult { Succeeded = false, Message = "Current mode requires an Active + Exact display association." };
             OperationResult result = _displayModeService.ApplyWithSnapshot(SelectedMode);
-            StatusText = result.Message;
+            RecordOperation(result);
             return result;
         }
 
         public OperationResult ConfirmCurrentMode()
         {
             OperationResult result = _displayModeService.ConfirmPending();
-            StatusText = result.Message;
+            RecordOperation(result);
             return result;
         }
 
         public OperationResult RestoreCurrentMode()
         {
             OperationResult result = _displayModeService.RestorePending();
-            StatusText = result.Message;
+            RecordOperation(result);
             Refresh();
             return result;
         }
@@ -313,7 +331,7 @@ namespace WinSuperResolution.ViewModels
         public OperationResult ApplyExperimentalScale()
         {
             OperationResult result = _scaleService.Apply(SelectedRecord, SelectedScalePercent);
-            StatusText = result.Message;
+            RecordOperation(result);
             return result;
         }
 
@@ -350,8 +368,41 @@ namespace WinSuperResolution.ViewModels
                 AvailableScalePercentages.Add(scale);
             if (AvailableScalePercentages.Count > 0)
                 SelectedScalePercent = AvailableScalePercentages[0];
-            ScaleAvailability = _scaleService.GetAvailability(SelectedRecord);
+            ScaleAvailability = LocalizeScaleAvailability(_scaleService.GetAvailabilityStatus(SelectedRecord));
             OnPropertyChanged("CanApplyExperimentalScale");
+        }
+
+        private void RecordOperation(OperationResult result)
+        {
+            StatusText = result.Message;
+            LastOperationSummary = BuildOperationSummary(result);
+        }
+
+        private string BuildOperationSummary(OperationResult result)
+        {
+            if (result == null)
+                return string.Empty;
+            StringBuilder builder = new StringBuilder();
+            builder.Append(result.Succeeded ? Ui["OperationSucceeded"] : Ui["OperationFailed"]);
+            if (!string.IsNullOrEmpty(result.BackupPath))
+                builder.AppendLine().Append(Ui["BackupPathLabel"]).Append(result.BackupPath);
+            if (!string.IsNullOrEmpty(result.JournalPath))
+                builder.AppendLine().Append(Ui["JournalPathLabel"]).Append(result.JournalPath);
+            if (result.RestartRequired)
+                builder.AppendLine().Append(Ui["RestartRequiredNotice"]);
+            return builder.ToString();
+        }
+
+        private string LocalizeScaleAvailability(ScaleAvailabilityStatus status)
+        {
+            switch (status)
+            {
+                case ScaleAvailabilityStatus.NoSelection: return Ui["ScaleNoSelection"];
+                case ScaleAvailabilityStatus.RequiresExactMatch: return Ui["ScaleRequiresExactMatch"];
+                case ScaleAvailabilityStatus.CurrentScaleUnavailable: return Ui["ScaleCurrentUnavailable"];
+                case ScaleAvailabilityStatus.NoVerifiedProfile: return Ui["ScaleNoVerifiedProfile"];
+                default: return Ui["ScaleAvailable"];
+            }
         }
 
         private int CountTargets()

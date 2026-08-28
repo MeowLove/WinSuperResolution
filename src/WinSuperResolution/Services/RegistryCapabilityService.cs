@@ -70,7 +70,8 @@ namespace WinSuperResolution.Services
                         Succeeded = true,
                         Message = "Virtual-resolution capability batch was written and verified. Reboot or restart the display driver before expecting new current modes.",
                         JournalPath = journalPath,
-                        BackupPath = backupPath
+                        BackupPath = backupPath,
+                        RestartRequired = true
                     };
                 }
                 catch (Exception exception)

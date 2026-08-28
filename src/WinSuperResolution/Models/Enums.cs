@@ -30,4 +30,13 @@ namespace WinSuperResolution.Models
         Blocked,
         Error
     }
+
+    public enum ScaleAvailabilityStatus
+    {
+        NoSelection,
+        RequiresExactMatch,
+        CurrentScaleUnavailable,
+        NoVerifiedProfile,
+        Available
+    }
 }

@@ -26,24 +26,24 @@ namespace WinSuperResolution.Services
                 : new List<int>(profile.AllowedScalePercentages);
         }
 
-        internal string GetAvailability(DisplayConfigurationRecord record)
+        internal ScaleAvailabilityStatus GetAvailabilityStatus(DisplayConfigurationRecord record)
         {
             if (record == null)
-                return "Experimental scaling: select a display record first.";
+                return ScaleAvailabilityStatus.NoSelection;
             if (!record.CanManageCurrentState)
-                return "Experimental scaling is disabled: it requires an Active + Exact live display match.";
+                return ScaleAvailabilityStatus.RequiresExactMatch;
             if (record.LiveDisplay.CurrentScalePercent <= 0)
-                return "Experimental scaling is disabled: current per-monitor scale could not be read.";
+                return ScaleAvailabilityStatus.CurrentScaleUnavailable;
             if (FindProfile(record) == null)
-                return "Experimental scaling is disabled: no verified compatibility profile matches this Windows build, user session, and display mapping. Open Windows Display Settings to change scale manually.";
-            return "Experimental scaling is available for this verified profile.";
+                return ScaleAvailabilityStatus.NoVerifiedProfile;
+            return ScaleAvailabilityStatus.Available;
         }
 
         internal OperationResult Apply(DisplayConfigurationRecord record, int targetScalePercent)
         {
             ScaleCompatibilityProfile profile = FindProfile(record);
             if (profile == null)
-                return new OperationResult { Succeeded = false, Message = GetAvailability(record) };
+                return new OperationResult { Succeeded = false, Message = GetAvailabilityStatus(record).ToString() };
             if (!profile.AllowedScalePercentages.Contains(targetScalePercent))
                 return new OperationResult { Succeeded = false, Message = "The requested scale is not allowed by the verified compatibility profile." };
 

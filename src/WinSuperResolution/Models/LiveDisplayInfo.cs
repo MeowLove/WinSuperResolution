@@ -8,6 +8,9 @@ namespace WinSuperResolution.Models
         public string MonitorDeviceId { get; set; }
         public string MonitorDeviceKey { get; set; }
         public string ConnectionTechnology { get; set; }
+        public string EdidManufacturer { get; set; }
+        public int EdidProductCode { get; set; }
+        public string MonitorDevicePath { get; set; }
         public string TopologyEvidence { get; set; }
         public int CurrentWidth { get; set; }
         public int CurrentHeight { get; set; }

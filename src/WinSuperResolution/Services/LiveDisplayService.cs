@@ -12,11 +12,12 @@ namespace WinSuperResolution.Services
         private const int DpiTypeEffective = 0;
         private const uint QdcOnlyActivePaths = 0x00000002;
         private const uint DisplayConfigDeviceInfoGetSourceName = 1;
+        private const uint DisplayConfigDeviceInfoGetTargetName = 2;
 
         internal IList<LiveDisplayInfo> Enumerate()
         {
             Dictionary<string, int> dpiByDevice = EnumerateEffectiveDpi();
-            ISet<string> activePathDevices = QueryActivePathDeviceNames();
+            IDictionary<string, DisplayTargetDetails> activePathDevices = QueryActivePathDetails();
             List<LiveDisplayInfo> displays = new List<LiveDisplayInfo>();
             uint index = 0;
             while (true)
@@ -34,6 +35,8 @@ namespace WinSuperResolution.Services
                 bool hasMode = EnumDisplaySettingsEx(adapter.DeviceName, EnumCurrentSettings, ref mode, 0);
                 int dpi;
                 dpiByDevice.TryGetValue(adapter.DeviceName, out dpi);
+                DisplayTargetDetails targetDetails;
+                activePathDevices.TryGetValue(adapter.DeviceName, out targetDetails);
                 displays.Add(new LiveDisplayInfo
                 {
                     DeviceName = adapter.DeviceName,
@@ -41,8 +44,11 @@ namespace WinSuperResolution.Services
                     FriendlyName = hasMonitor && !string.IsNullOrEmpty(monitor.DeviceString) ? monitor.DeviceString : adapter.DeviceString,
                     MonitorDeviceId = hasMonitor ? monitor.DeviceId : string.Empty,
                     MonitorDeviceKey = hasMonitor ? monitor.DeviceKey : string.Empty,
-                    ConnectionTechnology = "Unknown",
-                    TopologyEvidence = activePathDevices.Contains(adapter.DeviceName) ? "QueryDisplayConfig active path + EnumDisplayDevices" : "EnumDisplayDevices active desktop",
+                    ConnectionTechnology = targetDetails == null ? "Unknown" : DescribeOutputTechnology(targetDetails.OutputTechnology),
+                    EdidManufacturer = targetDetails == null ? string.Empty : DecodeEdidManufacturer(targetDetails.EdidManufacturerId),
+                    EdidProductCode = targetDetails == null ? 0 : targetDetails.EdidProductCodeId,
+                    MonitorDevicePath = targetDetails == null ? string.Empty : targetDetails.MonitorDevicePath,
+                    TopologyEvidence = targetDetails == null ? "EnumDisplayDevices active desktop" : "QueryDisplayConfig target + EnumDisplayDevices",
                     CurrentWidth = hasMode ? (int)mode.PelsWidth : 0,
                     CurrentHeight = hasMode ? (int)mode.PelsHeight : 0,
                     CurrentScalePercent = dpi > 0 ? (int)Math.Round(dpi * 100.0 / 96.0) : 0,
@@ -52,19 +58,19 @@ namespace WinSuperResolution.Services
             return displays;
         }
 
-        private static ISet<string> QueryActivePathDeviceNames()
+        private static IDictionary<string, DisplayTargetDetails> QueryActivePathDetails()
         {
-            HashSet<string> names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, DisplayTargetDetails> values = new Dictionary<string, DisplayTargetDetails>(StringComparer.OrdinalIgnoreCase);
             uint pathCount;
             uint modeCount;
             if (GetDisplayConfigBufferSizes(QdcOnlyActivePaths, out pathCount, out modeCount) != 0 || pathCount == 0)
-                return names;
+                return values;
             DisplayConfigPathInfo[] paths = new DisplayConfigPathInfo[pathCount];
             DisplayConfigModeInfo[] modes = new DisplayConfigModeInfo[modeCount];
             uint suppliedPathCount = pathCount;
             uint suppliedModeCount = modeCount;
             if (QueryDisplayConfig(QdcOnlyActivePaths, ref suppliedPathCount, paths, ref suppliedModeCount, modes, IntPtr.Zero) != 0)
-                return names;
+                return values;
             for (int index = 0; index < suppliedPathCount; index++)
             {
                 DisplayConfigSourceDeviceName sourceName = new DisplayConfigSourceDeviceName();
@@ -72,10 +78,46 @@ namespace WinSuperResolution.Services
                 sourceName.Header.Size = (uint)Marshal.SizeOf(typeof(DisplayConfigSourceDeviceName));
                 sourceName.Header.AdapterId = paths[index].SourceInfo.AdapterId;
                 sourceName.Header.Id = paths[index].SourceInfo.Id;
-                if (DisplayConfigGetDeviceInfo(ref sourceName) == 0 && !string.IsNullOrEmpty(sourceName.ViewGdiDeviceName))
-                    names.Add(sourceName.ViewGdiDeviceName);
+                if (DisplayConfigGetDeviceInfo(ref sourceName) != 0 || string.IsNullOrEmpty(sourceName.ViewGdiDeviceName))
+                    continue;
+                DisplayConfigTargetDeviceName targetName = new DisplayConfigTargetDeviceName();
+                targetName.Header.Type = DisplayConfigDeviceInfoGetTargetName;
+                targetName.Header.Size = (uint)Marshal.SizeOf(typeof(DisplayConfigTargetDeviceName));
+                targetName.Header.AdapterId = paths[index].TargetInfo.AdapterId;
+                targetName.Header.Id = paths[index].TargetInfo.Id;
+                if (DisplayConfigGetDeviceInfo(ref targetName) != 0)
+                    continue;
+                values[sourceName.ViewGdiDeviceName] = new DisplayTargetDetails
+                {
+                    OutputTechnology = targetName.OutputTechnology,
+                    EdidManufacturerId = targetName.EdidManufacturerId,
+                    EdidProductCodeId = targetName.EdidProductCodeId,
+                    MonitorDevicePath = targetName.MonitorDevicePath
+                };
             }
-            return names;
+            return values;
+        }
+
+        private static string DecodeEdidManufacturer(ushort value)
+        {
+            if (value == 0)
+                return string.Empty;
+            char first = (char)(((value >> 10) & 0x1F) + 64);
+            char second = (char)(((value >> 5) & 0x1F) + 64);
+            char third = (char)((value & 0x1F) + 64);
+            return first + second.ToString() + third;
+        }
+
+        private static string DescribeOutputTechnology(uint value)
+        {
+            switch (value)
+            {
+                case 5: return "HDMI";
+                case 10: return "DisplayPort";
+                case 11: return "eDP";
+                case 0x80000000: return "Internal";
+                default: return "DisplayConfig:" + value;
+            }
         }
 
         private static Dictionary<string, int> EnumerateEffectiveDpi()
@@ -291,6 +333,27 @@ namespace WinSuperResolution.Services
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string ViewGdiDeviceName;
         }
 
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        private struct DisplayConfigTargetDeviceName
+        {
+            public DisplayConfigDeviceInfoHeader Header;
+            public uint Flags;
+            public uint OutputTechnology;
+            public ushort EdidManufacturerId;
+            public ushort EdidProductCodeId;
+            public uint ConnectorInstance;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)] public string MonitorFriendlyDeviceName;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)] public string MonitorDevicePath;
+        }
+
+        private sealed class DisplayTargetDetails
+        {
+            internal uint OutputTechnology { get; set; }
+            internal ushort EdidManufacturerId { get; set; }
+            internal ushort EdidProductCodeId { get; set; }
+            internal string MonitorDevicePath { get; set; }
+        }
+
         [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern bool EnumDisplayDevices(string device, uint deviceIndex, ref DisplayDevice displayDevice, uint flags);
 
@@ -314,5 +377,8 @@ namespace WinSuperResolution.Services
 
         [DllImport("user32.dll", SetLastError = true)]
         private static extern int DisplayConfigGetDeviceInfo(ref DisplayConfigSourceDeviceName requestPacket);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern int DisplayConfigGetDeviceInfo(ref DisplayConfigTargetDeviceName requestPacket);
     }
 }

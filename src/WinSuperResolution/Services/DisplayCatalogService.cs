@@ -133,10 +133,10 @@ namespace WinSuperResolution.Services
             LiveDisplayInfo candidate = candidates[0];
             record.LiveDisplay = candidate;
             record.ConnectionStatus = ConnectionStatus.Active;
-            if (HasStableIdentityEvidence(record.ConfigurationKey, candidate.MonitorDeviceId))
+            if (HasStableIdentityEvidence(record.ConfigurationKey, candidate))
             {
                 record.MatchStatus = MatchStatus.Exact;
-                record.CorrelationEvidence = "Unique monitor instance evidence and current-mode evidence matched.";
+                record.CorrelationEvidence = "Unique EDID/monitor identity evidence and current-mode evidence matched.";
                 record.ScanWarning = string.Empty;
             }
             else
@@ -156,15 +156,27 @@ namespace WinSuperResolution.Services
             return record.PrimarySurfaceWidth == display.CurrentWidth && record.PrimarySurfaceHeight == display.CurrentHeight;
         }
 
-        private static bool HasStableIdentityEvidence(string configurationKey, string monitorDeviceId)
+        private static bool HasStableIdentityEvidence(string configurationKey, LiveDisplayInfo display)
         {
-            if (string.IsNullOrEmpty(configurationKey) || string.IsNullOrEmpty(monitorDeviceId))
+            if (string.IsNullOrEmpty(configurationKey) || display == null)
                 return false;
-            string[] parts = monitorDeviceId.Split('\\');
-            if (parts.Length < 3 || string.IsNullOrEmpty(parts[2]) || parts[2].Length < 12)
-                return false;
-            string instanceToken = Normalize(parts[2]);
-            return instanceToken.Length >= 12 && Normalize(configurationKey).IndexOf(instanceToken, System.StringComparison.OrdinalIgnoreCase) >= 0;
+            string key = Normalize(configurationKey);
+            string monitorId = Normalize(display.MonitorDeviceId);
+            string devicePath = Normalize(display.MonitorDevicePath);
+            if (monitorId.Length >= 12 && key.IndexOf(monitorId, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+            string[] monitorIdParts = (display.MonitorDeviceId ?? string.Empty).Split('\\');
+            if (monitorIdParts.Length >= 3)
+            {
+                string instanceToken = Normalize(monitorIdParts[2]);
+                if (instanceToken.Length >= 12 && key.IndexOf(instanceToken, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                    return true;
+            }
+            if (devicePath.Length >= 16 && key.IndexOf(devicePath, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+            string manufacturer = Normalize(display.EdidManufacturer);
+            string productCode = display.EdidProductCode > 0 ? display.EdidProductCode.ToString() : string.Empty;
+            return manufacturer.Length == 3 && productCode.Length > 0 && key.IndexOf(manufacturer + productCode, System.StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         private static string Normalize(string value)

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Windows;
 using WinSuperResolution.Models;
+using WinSuperResolution.Services;
 using WinSuperResolution.ViewModels;
 using WinSuperResolution.Windows;
 
@@ -114,9 +115,24 @@ namespace WinSuperResolution
             _viewModel.StatusText = _viewModel.Ui["DiagnosticCopied"];
         }
 
+        private void OpenRecoveryFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Process.Start("explorer.exe", AppPaths.DataRoot);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message, _viewModel.Ui["Recovery"], MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void ShowResult(OperationResult result)
         {
-            MessageBox.Show(result.Message, _viewModel.Ui["OperationResult"], MessageBoxButton.OK, result.Succeeded ? MessageBoxImage.Information : MessageBoxImage.Warning);
+            String message = result.Message;
+            if (result.RestartRequired)
+                message = _viewModel.Ui["RestartRequiredNotice"] + Environment.NewLine + Environment.NewLine + message;
+            MessageBox.Show(message, _viewModel.Ui["OperationResult"], MessageBoxButton.OK, result.Succeeded ? MessageBoxImage.Information : MessageBoxImage.Warning);
         }
     }
 }
