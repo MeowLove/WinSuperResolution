@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using WinSuperResolution.Models;
 using WinSuperResolution.Resources;
 using WinSuperResolution.Services;
@@ -16,6 +17,10 @@ namespace WinSuperResolution.SmokeTests
                 TestPrimarySurfaceFallbackPlan();
                 TestInvalidMagnification();
                 TestEmbeddedLocalization();
+                TestPortablePaths();
+                TestActiveSignalTargetSelection();
+                TestUniqueTopologyPromotion();
+                TestDisplayIdentityIncludesDeviceName();
                 TestLiveDisplayEnumeration();
                 TestExperimentalScaleSafetyGate();
                 TestWindowMarkupLoads();
@@ -65,7 +70,54 @@ namespace WinSuperResolution.SmokeTests
             Assert(Strings.ForCulture("en-US")["Refresh"] == "Refresh", "English embedded resource is missing.");
             Assert(Strings.ForCulture("zh-CN")["Refresh"] == "刷新", "Chinese embedded resource is missing.");
             Assert(Strings.ForCulture("ru-RU")["Refresh"] == "Обновить", "Russian embedded resource is missing.");
+            Assert(Strings.ForCulture("zh-CN")["ScanComplete"].StartsWith("扫描完成"), "Chinese scan status is not localized.");
             Assert(Strings.ForCulture("unknown")["ProductName"] == "WinSuperResolution", "Unsupported cultures must fall back to English.");
+        }
+
+        private static void TestPortablePaths()
+        {
+            Assert(AppPaths.DataRoot == AppPaths.ExecutableDirectory, "Portable data root must be the executable directory.");
+            Assert(Path.GetDirectoryName(AppPaths.SettingsPath).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) == AppPaths.ExecutableDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar), "Settings must be stored beside the executable.");
+            Assert(Path.GetFileName(AppPaths.BackupsDirectory) == "backup_reg", "Registry backups must use the portable backup_reg directory.");
+        }
+
+        private static void TestActiveSignalTargetSelection()
+        {
+            System.Collections.Generic.List<RegistryTarget> targets = new System.Collections.Generic.List<RegistryTarget>
+            {
+                new RegistryTarget { PrimarySurfaceWidth = 4320, PrimarySurfaceHeight = 2700 },
+                new RegistryTarget { PrimarySurfaceWidth = 4320, PrimarySurfaceHeight = 2700, ActiveSignalWidth = 2880, ActiveSignalHeight = 1800 }
+            };
+            RegistryTarget selected = DisplayCatalogService.SelectSignalTarget(targets);
+            Assert(selected.ActiveSignalWidth == 2880 && selected.ActiveSignalHeight == 1800, "The scan must use a valid ActiveSize from any target node.");
+        }
+
+        private static void TestUniqueTopologyPromotion()
+        {
+            DisplayConfigurationRecord record = CreateRecord(4320, 2700, 4320, 2700);
+            record.MatchStatus = MatchStatus.Candidate;
+            LiveDisplayInfo display = new LiveDisplayInfo
+            {
+                CurrentWidth = 4320,
+                CurrentHeight = 2700,
+                IsAttachedToDesktop = true
+            };
+            DisplayCatalogService.PromoteUniqueTopologyMatches(
+                new System.Collections.Generic.List<DisplayConfigurationRecord> { record },
+                new System.Collections.Generic.List<LiveDisplayInfo> { display });
+            Assert(record.MatchStatus == MatchStatus.Exact, "A one-to-one active topology match should promote a Candidate record to Exact.");
+        }
+
+        private static void TestDisplayIdentityIncludesDeviceName()
+        {
+            DisplayConfigurationRecord record = CreateRecord(1920, 1080, 1920, 1080);
+            record.LiveDisplay = new LiveDisplayInfo
+            {
+                FriendlyName = "Test Monitor",
+                DeviceName = @"\\.\DISPLAY2",
+                ConnectionTechnology = "DisplayPort"
+            };
+            Assert(record.DisplayIdentity.Contains(@"\\.\DISPLAY2") && record.DisplayIdentity.Contains("DisplayPort"), "Active display identity should include the Windows display name and connection technology.");
         }
 
         private static void TestLiveDisplayEnumeration()
@@ -76,10 +128,12 @@ namespace WinSuperResolution.SmokeTests
 
         private static void TestExperimentalScaleSafetyGate()
         {
-            ExperimentalScaleService service = new ExperimentalScaleService(new JournalService());
+            ExperimentalScaleService service = new ExperimentalScaleService(new JournalService(), new DiagnosticsService());
             OperationResult result = service.Apply(null, 150);
-            Assert(!result.Succeeded, "Experimental scaling must refuse an unverified target.");
+            Assert(!result.Succeeded, "Experimental scaling must refuse an unknown target.");
             Assert(service.GetAvailableScalePercentages(null).Count == 0, "Unknown displays must not expose scale options.");
+            Assert(ExperimentalScaleService.GetBaselineScalePercent(150, -2) == 200, "DpiValue baseline mapping is incorrect.");
+            Assert(ExperimentalScaleService.CalculateTargetDpiValue(200, 250) == 2, "DpiValue target mapping is incorrect.");
         }
 
         private static void TestWindowMarkupLoads()

@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Controls;
 using WinSuperResolution.Models;
 using WinSuperResolution.Services;
 using WinSuperResolution.ViewModels;
@@ -18,7 +19,26 @@ namespace WinSuperResolution
             InitializeComponent();
             _viewModel = new MainViewModel();
             DataContext = _viewModel;
+            _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+            ApplyLocalizedColumnHeaders();
             Loaded += MainWindow_Loaded;
+        }
+
+        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "Ui")
+                ApplyLocalizedColumnHeaders();
+        }
+
+        private void ApplyLocalizedColumnHeaders()
+        {
+            if (DisplayGrid == null || _viewModel == null || DisplayGrid.Columns.Count < 5)
+                return;
+            DisplayGrid.Columns[0].Header = _viewModel.Ui["Status"];
+            DisplayGrid.Columns[1].Header = _viewModel.Ui["Display"];
+            DisplayGrid.Columns[2].Header = _viewModel.Ui["Surface"];
+            DisplayGrid.Columns[3].Header = _viewModel.Ui["Signal"];
+            DisplayGrid.Columns[4].Header = _viewModel.Ui["Association"];
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -34,6 +54,15 @@ namespace WinSuperResolution
         private void BuildPlanButton_Click(object sender, RoutedEventArgs e)
         {
             _viewModel.BuildPlan();
+        }
+
+        private void SetMagnificationButton_Click(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            int magnification;
+            if (button == null || !int.TryParse(button.Tag as string, out magnification))
+                return;
+            _viewModel.SelectedMagnification = magnification;
         }
 
         private void ApplySelectedButton_Click(object sender, RoutedEventArgs e)
@@ -94,7 +123,16 @@ namespace WinSuperResolution
 
         private void ApplyScaleButton_Click(object sender, RoutedEventArgs e)
         {
+            if (MessageBox.Show(string.Format(_viewModel.Ui["ConfirmScale"], _viewModel.SelectedScalePercent), _viewModel.Ui["ProductName"], MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                return;
             ShowResult(_viewModel.ApplyExperimentalScale());
+        }
+
+        private void RestoreScaleButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show(_viewModel.Ui["RestoreScaleQuestion"], _viewModel.Ui["ProductName"], MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                return;
+            ShowResult(_viewModel.RestoreLatestExperimentalScale());
         }
 
         private void DisplaySettingsButton_Click(object sender, RoutedEventArgs e)

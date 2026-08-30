@@ -42,6 +42,10 @@ namespace WinSuperResolution.Services
                 }
             }
 
+            PromoteUniqueTopologyMatches(records, liveDisplays);
+
+            foreach (DisplayConfigurationRecord record in records)
+                _diagnostics.Write("Display record " + record.ConfigurationKey + ": targets=" + record.RegistryTargets.Count + ", primary=" + record.PrimarySurfaceText + ", activeSignal=" + record.ActiveSignalText + ", connection=" + record.ConnectionStatus + ", match=" + record.MatchStatus);
             _diagnostics.Write("Scanned " + records.Count + " registered display configuration root(s) and " + liveDisplays.Count + " active Windows display(s).");
             return records;
         }
@@ -94,13 +98,46 @@ namespace WinSuperResolution.Services
             }
 
             RegistryTarget primary = record.RegistryTargets[0];
+            RegistryTarget signalTarget = SelectSignalTarget(record.RegistryTargets);
             record.PrimarySurfaceWidth = primary.PrimarySurfaceWidth;
             record.PrimarySurfaceHeight = primary.PrimarySurfaceHeight;
-            record.ActiveSignalWidth = primary.ActiveSignalWidth;
-            record.ActiveSignalHeight = primary.ActiveSignalHeight;
-            record.CalculationBasis = primary.HasActiveSignal ? CalculationBasis.ActiveSize : CalculationBasis.PrimSurfSize;
-            record.ValidationStatus = primary.HasActiveSignal ? ValidationStatus.Ready : ValidationStatus.Warning;
+            record.ActiveSignalWidth = signalTarget.ActiveSignalWidth;
+            record.ActiveSignalHeight = signalTarget.ActiveSignalHeight;
+            record.CalculationBasis = signalTarget.HasActiveSignal ? CalculationBasis.ActiveSize : CalculationBasis.PrimSurfSize;
+            record.ValidationStatus = signalTarget.HasActiveSignal ? ValidationStatus.Ready : ValidationStatus.Warning;
             CorrelateLiveDisplay(record, liveDisplays);
+        }
+
+        internal static RegistryTarget SelectSignalTarget(IList<RegistryTarget> targets)
+        {
+            if (targets == null || targets.Count == 0)
+                return null;
+            foreach (RegistryTarget target in targets)
+            {
+                if (target != null && target.HasActiveSignal)
+                    return target;
+            }
+            return targets[0];
+        }
+
+        internal static void PromoteUniqueTopologyMatches(IList<DisplayConfigurationRecord> records, IList<LiveDisplayInfo> liveDisplays)
+        {
+            foreach (LiveDisplayInfo display in liveDisplays)
+            {
+                List<DisplayConfigurationRecord> matches = new List<DisplayConfigurationRecord>();
+                foreach (DisplayConfigurationRecord record in records)
+                {
+                    if (MatchesResolutionEvidence(record, display))
+                        matches.Add(record);
+                }
+                if (matches.Count != 1 || matches[0].MatchStatus != MatchStatus.Candidate)
+                    continue;
+
+                DisplayConfigurationRecord unique = matches[0];
+                unique.MatchStatus = MatchStatus.Exact;
+                unique.CorrelationEvidence = "Unique active topology and current-mode resolution evidence matched; the registry key has no stable monitor token.";
+                unique.ScanWarning = string.Empty;
+            }
         }
 
         private static void CorrelateLiveDisplay(DisplayConfigurationRecord record, IList<LiveDisplayInfo> liveDisplays)

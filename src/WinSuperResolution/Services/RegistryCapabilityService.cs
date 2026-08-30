@@ -99,20 +99,21 @@ namespace WinSuperResolution.Services
 
         internal OperationResult RestoreLatest()
         {
-            if (!File.Exists(AppPaths.LatestCapabilityJournalPath))
+            string journalPath = AppPaths.ResolveLatestCapabilityJournalPath();
+            if (!File.Exists(journalPath))
                 return Failure("No virtual-resolution capability journal is available to restore.");
 
             try
             {
-                RegistryOperationJournal journal = _journals.Read<RegistryOperationJournal>(AppPaths.LatestCapabilityJournalPath);
+                RegistryOperationJournal journal = _journals.Read<RegistryOperationJournal>(journalPath);
                 RecoverEntries(journal);
                 journal.Status = HasResidualFailure(journal) ? "ResidualFailure" : "Recovered";
-                _journals.Write(AppPaths.LatestCapabilityJournalPath, journal);
+                _journals.Write(journalPath, journal);
                 return new OperationResult
                 {
                     Succeeded = !HasResidualFailure(journal),
                     Message = journal.Status == "Recovered" ? "The latest capability journal was restored and verified." : "Recovery completed with residual failures; inspect the journal for exact paths.",
-                    JournalPath = AppPaths.LatestCapabilityJournalPath,
+                    JournalPath = journalPath,
                     BackupPath = journal.BackupPath
                 };
             }

@@ -26,6 +26,7 @@ namespace WinSuperResolution.ViewModels
         private string _statusText;
         private string _planSummary;
         private string _scaleAvailability;
+        private string _currentModeAvailability;
         private string _lastOperationSummary;
         private LocalizedStrings _ui;
 
@@ -37,14 +38,11 @@ namespace WinSuperResolution.ViewModels
             _planService = new ResolutionPlanService();
             _capabilityService = new RegistryCapabilityService(journals, _diagnostics);
             _displayModeService = new DisplayModeService(journals);
-            _scaleService = new ExperimentalScaleService(journals);
+            _scaleService = new ExperimentalScaleService(journals, _diagnostics);
             _settingsService = new PortableSettingsService();
             Records = new ObservableCollection<DisplayConfigurationRecord>();
             CurrentModes = new ObservableCollection<DisplayMode>();
             AvailableScalePercentages = new ObservableCollection<int>();
-            MagnificationOptions = new List<int>();
-            for (int value = 100; value <= 350; value += 10)
-                MagnificationOptions.Add(value);
             Languages = Strings.SupportedCultures;
             _selectedMagnification = 150;
             _selectedLanguage = _settingsService.LoadLanguage();
@@ -54,13 +52,13 @@ namespace WinSuperResolution.ViewModels
             _statusText = Ui["Ready"];
             _planSummary = Ui["NoPlan"];
             _scaleAvailability = Ui["ScaleNoSelection"];
+            _currentModeAvailability = Ui["ModeNoSelection"];
             _lastOperationSummary = Ui["NoOperationYet"];
         }
 
         public ObservableCollection<DisplayConfigurationRecord> Records { get; private set; }
         public ObservableCollection<DisplayMode> CurrentModes { get; private set; }
         public ObservableCollection<int> AvailableScalePercentages { get; private set; }
-        public IList<int> MagnificationOptions { get; private set; }
         public IList<string> Languages { get; private set; }
         public LocalizedStrings Ui { get { return _ui; } }
         public string RecoveryDataPath { get { return AppPaths.DataRoot; } }
@@ -125,11 +123,9 @@ namespace WinSuperResolution.ViewModels
                 _settingsService.SaveLanguage(value);
                 OnPropertyChanged("SelectedLanguage");
                 OnPropertyChanged("Ui");
-                OnPropertyChanged("SelectedSummary");
-                OnPropertyChanged("CurrentStateSummary");
-                ScaleAvailability = LocalizeScaleAvailability(_scaleService.GetAvailabilityStatus(SelectedRecord));
                 if (string.IsNullOrEmpty(LastOperationSummary) || LastOperationSummary == "No operation has been recorded in this session.")
                     LastOperationSummary = Ui["NoOperationYet"];
+                Refresh();
             }
         }
 
@@ -142,10 +138,10 @@ namespace WinSuperResolution.ViewModels
                 return string.Format(Ui["SelectedSummary"],
                     SelectedRecord.DisplayIdentity,
                     SelectedRecord.RegistryTargets.Count,
-                    SelectedRecord.MatchStatus,
-                    SelectedRecord.ConnectionStatus,
-                    SelectedRecord.CorrelationEvidence,
-                    SelectedRecord.ScanWarning);
+                    SelectedRecord.MatchStatusText,
+                    SelectedRecord.ConnectionStatusText,
+                    LocalizeEvidence(SelectedRecord.CorrelationEvidence),
+                    LocalizeWarning(SelectedRecord.ScanWarning));
             }
         }
 
@@ -170,7 +166,7 @@ namespace WinSuperResolution.ViewModels
 
         public bool CanApplyExperimentalScale
         {
-            get { return CanManageCurrentState && AvailableScalePercentages.Count > 0 && SelectedScalePercent > 0; }
+            get { return AvailableScalePercentages.Count > 0 && SelectedScalePercent > 0; }
         }
 
         public string ScaleAvailability
@@ -180,6 +176,16 @@ namespace WinSuperResolution.ViewModels
             {
                 _scaleAvailability = value;
                 OnPropertyChanged("ScaleAvailability");
+            }
+        }
+
+        public string CurrentModeAvailability
+        {
+            get { return _currentModeAvailability; }
+            private set
+            {
+                _currentModeAvailability = value;
+                OnPropertyChanged("CurrentModeAvailability");
             }
         }
 
@@ -220,7 +226,10 @@ namespace WinSuperResolution.ViewModels
                 IList<DisplayConfigurationRecord> records = _catalogService.Scan();
                 Records.Clear();
                 foreach (DisplayConfigurationRecord record in records)
+                {
+                    LocalizeRecordPresentation(record);
                     Records.Add(record);
+                }
                 SelectedRecord = Records.Count > 0 ? Records[0] : null;
                 PlanSummary = Ui["NoPlan"];
                 StatusText = string.Format(Ui["ScanComplete"], Records.Count, CountTargets());
@@ -331,6 +340,17 @@ namespace WinSuperResolution.ViewModels
         public OperationResult ApplyExperimentalScale()
         {
             OperationResult result = _scaleService.Apply(SelectedRecord, SelectedScalePercent);
+            if (result.Succeeded)
+                result.Message = Ui["ScaleApplied"];
+            RecordOperation(result);
+            return result;
+        }
+
+        public OperationResult RestoreLatestExperimentalScale()
+        {
+            OperationResult result = _scaleService.RestoreLatest();
+            if (result.Succeeded)
+                result.Message = Ui["ScaleRestored"];
             RecordOperation(result);
             return result;
         }
@@ -357,19 +377,38 @@ namespace WinSuperResolution.ViewModels
             AvailableScalePercentages.Clear();
             SelectedMode = null;
             SelectedScalePercent = 0;
+            CurrentModeAvailability = LocalizeCurrentModeAvailability();
             if (SelectedRecord != null && SelectedRecord.CanManageCurrentState)
             {
                 foreach (DisplayMode mode in _displayModeService.EnumerateModes(SelectedRecord.LiveDisplay.DeviceName))
                     CurrentModes.Add(mode);
                 if (CurrentModes.Count > 0)
                     SelectedMode = CurrentModes[0];
+                CurrentModeAvailability = CurrentModes.Count > 0 ? Ui["ModeAvailable"] : Ui["ModeNoModes"];
             }
             foreach (int scale in _scaleService.GetAvailableScalePercentages(SelectedRecord))
                 AvailableScalePercentages.Add(scale);
             if (AvailableScalePercentages.Count > 0)
-                SelectedScalePercent = AvailableScalePercentages[0];
+            {
+                int currentScale = SelectedRecord != null && SelectedRecord.LiveDisplay != null ? SelectedRecord.LiveDisplay.CurrentScalePercent : 0;
+                SelectedScalePercent = AvailableScalePercentages.Contains(currentScale) ? currentScale : AvailableScalePercentages[0];
+            }
             ScaleAvailability = LocalizeScaleAvailability(_scaleService.GetAvailabilityStatus(SelectedRecord));
             OnPropertyChanged("CanApplyExperimentalScale");
+            OnPropertyChanged("CanManageCurrentState");
+        }
+
+        private string LocalizeCurrentModeAvailability()
+        {
+            if (SelectedRecord == null)
+                return Ui["ModeNoSelection"];
+            if (SelectedRecord.ConnectionStatus != ConnectionStatus.Active)
+                return Ui["ModeRequiresActive"];
+            if (SelectedRecord.MatchStatus != MatchStatus.Exact)
+                return Ui["ModeRequiresExact"];
+            if (SelectedRecord.LiveDisplay == null)
+                return Ui["ModeNoLiveDisplay"];
+            return Ui["ModeNoModes"];
         }
 
         private void RecordOperation(OperationResult result)
@@ -398,11 +437,60 @@ namespace WinSuperResolution.ViewModels
             switch (status)
             {
                 case ScaleAvailabilityStatus.NoSelection: return Ui["ScaleNoSelection"];
-                case ScaleAvailabilityStatus.RequiresExactMatch: return Ui["ScaleRequiresExactMatch"];
+                case ScaleAvailabilityStatus.RequiresActiveDisplay: return Ui["ScaleRequiresActiveDisplay"];
                 case ScaleAvailabilityStatus.CurrentScaleUnavailable: return Ui["ScaleCurrentUnavailable"];
-                case ScaleAvailabilityStatus.NoVerifiedProfile: return Ui["ScaleNoVerifiedProfile"];
+                case ScaleAvailabilityStatus.NoCompatibleSettingsTarget: return Ui["ScaleNoCompatibleSettingsTarget"];
                 default: return Ui["ScaleAvailable"];
             }
+        }
+
+        private void LocalizeRecordPresentation(DisplayConfigurationRecord record)
+        {
+            record.ConnectionStatusText = LocalizeConnectionStatus(record.ConnectionStatus);
+            record.MatchStatusText = LocalizeMatchStatus(record.MatchStatus);
+            record.PrimarySurfaceDisplayText = record.HasPrimarySurface ? record.PrimarySurfaceText : Ui["Unavailable"];
+            record.ActiveSignalDisplayText = record.HasActiveSignal ? record.ActiveSignalText : Ui["Unavailable"];
+        }
+
+        private string LocalizeConnectionStatus(ConnectionStatus status)
+        {
+            switch (status)
+            {
+                case ConnectionStatus.Active: return Ui["ConnectionActive"];
+                case ConnectionStatus.Historical: return Ui["ConnectionHistorical"];
+                case ConnectionStatus.Inactive: return Ui["ConnectionInactive"];
+                default: return Ui["ConnectionUnknown"];
+            }
+        }
+
+        private string LocalizeMatchStatus(MatchStatus status)
+        {
+            switch (status)
+            {
+                case MatchStatus.Exact: return Ui["MatchExact"];
+                case MatchStatus.Candidate: return Ui["MatchCandidate"];
+                case MatchStatus.Ambiguous: return Ui["MatchAmbiguous"];
+                default: return Ui["MatchUnmatched"];
+            }
+        }
+
+        private string LocalizeEvidence(string evidence)
+        {
+            if (evidence == "Unique EDID/monitor identity evidence and current-mode evidence matched.") return Ui["EvidenceExact"];
+            if (evidence == "Unique active topology and current-mode resolution evidence matched; the registry key has no stable monitor token.") return Ui["EvidenceTopologyUnique"];
+            if (evidence == "Current-mode resolution matches, but the registry key lacks a unique monitor instance token.") return Ui["EvidenceCandidate"];
+            if (evidence == "No active Windows display has compatible resolution evidence.") return Ui["EvidenceUnmatched"];
+            if (evidence == "Multiple active displays match only resolution evidence.") return Ui["EvidenceAmbiguous"];
+            return evidence;
+        }
+
+        private string LocalizeWarning(string warning)
+        {
+            if (warning == "Candidate live association only. Current mode and experimental scaling controls stay disabled until an Exact match is proven.") return Ui["WarningCandidate"];
+            if (warning == "Historical or uncorrelated registry configuration. It remains eligible for virtual-capability planning, but current mode and scale controls are disabled.") return Ui["WarningUnmatched"];
+            if (warning == "Ambiguous live association. The record is not treated as the current display.") return Ui["WarningAmbiguous"];
+            if (warning == "No writable PrimSurfSize target was found.") return Ui["WarningNoTarget"];
+            return warning;
         }
 
         private int CountTargets()

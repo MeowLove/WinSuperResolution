@@ -34,9 +34,9 @@ namespace WinSuperResolution.Models
     public enum ScaleAvailabilityStatus
     {
         NoSelection,
-        RequiresExactMatch,
+        RequiresActiveDisplay,
         CurrentScaleUnavailable,
-        NoVerifiedProfile,
+        NoCompatibleSettingsTarget,
         Available
     }
 }

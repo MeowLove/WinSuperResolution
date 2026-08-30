@@ -41,6 +41,10 @@ namespace WinSuperResolution.Models
         public string ScanWarning { get; set; }
         public LiveDisplayInfo LiveDisplay { get; set; }
         public string CorrelationEvidence { get; set; }
+        public string ConnectionStatusText { get; set; }
+        public string MatchStatusText { get; set; }
+        public string PrimarySurfaceDisplayText { get; set; }
+        public string ActiveSignalDisplayText { get; set; }
 
         public string PrimarySurfaceText
         {
@@ -71,8 +75,15 @@ namespace WinSuperResolution.Models
         {
             get
             {
-                if (LiveDisplay != null && !string.IsNullOrEmpty(LiveDisplay.FriendlyName))
-                    return LiveDisplay.FriendlyName;
+                if (LiveDisplay != null)
+                {
+                    string name = !string.IsNullOrEmpty(LiveDisplay.FriendlyName) ? LiveDisplay.FriendlyName : ConfigurationKey;
+                    string device = string.IsNullOrEmpty(LiveDisplay.DeviceName) ? string.Empty : " [" + LiveDisplay.DeviceName + "]";
+                    string connection = string.IsNullOrEmpty(LiveDisplay.ConnectionTechnology) || LiveDisplay.ConnectionTechnology == "Unknown"
+                        ? string.Empty
+                        : " · " + LiveDisplay.ConnectionTechnology;
+                    return name + device + connection;
+                }
                 return ConfigurationKey;
             }
         }

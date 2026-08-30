@@ -76,6 +76,7 @@ namespace WinSuperResolution.Models
         [DataMember] public string WindowsVersion { get; set; }
         [DataMember] public string DisplayIdentityEvidence { get; set; }
         [DataMember] public int OriginalScalePercent { get; set; }
+        [DataMember] public int BaselineScalePercent { get; set; }
         [DataMember] public int TargetScalePercent { get; set; }
         [DataMember] public IList<ScaleJournalEntry> Entries { get; private set; }
     }
