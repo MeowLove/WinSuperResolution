@@ -6,6 +6,8 @@
 
 WinSuperResolution 用于配置更高的 Windows 虚拟桌面分辨率，并配合 Windows 显示缩放，在有限的物理分辨率下获得更大的工作空间和更好的可读性。
 
+<img width="256" height="256" alt="WinSuperResolution_Logo" src="https://github.com/user-attachments/assets/33560a97-8cd2-40d8-ae23-6dce05fd663e" />
+
 ## 功能
 
 - 扫描 Windows 中已注册的显示配置，包括历史配置。
@@ -16,6 +18,8 @@ WinSuperResolution 用于配置更高的 Windows 虚拟桌面分辨率，并配�
 - 支持 English、简体中文和 Русский。
 
 本工具修改 Windows 显示配置，不是 AI 图像放大工具，也不提供 NVIDIA DLSS、AMD FSR、Intel XeSS 或同类 GPU 渲染功能。
+
+<img width="4320" height="2598" alt="Demo" src="https://github.com/user-attachments/assets/0b4a9972-723b-4125-aac2-e5680bcd9ad4" />
 
 ## 系统要求
 
