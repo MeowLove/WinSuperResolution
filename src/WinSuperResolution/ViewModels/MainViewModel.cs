@@ -28,6 +28,7 @@ namespace WinSuperResolution.ViewModels
         private string _scaleAvailability;
         private string _currentModeAvailability;
         private string _lastOperationSummary;
+        private bool _hasOperationInSession;
         private LocalizedStrings _ui;
 
         public MainViewModel()
@@ -123,7 +124,7 @@ namespace WinSuperResolution.ViewModels
                 _settingsService.SaveLanguage(value);
                 OnPropertyChanged("SelectedLanguage");
                 OnPropertyChanged("Ui");
-                if (string.IsNullOrEmpty(LastOperationSummary) || LastOperationSummary == "No operation has been recorded in this session.")
+                if (!_hasOperationInSession)
                     LastOperationSummary = Ui["NoOperationYet"];
                 Refresh();
             }
@@ -418,6 +419,7 @@ namespace WinSuperResolution.ViewModels
 
         private void RecordOperation(OperationResult result)
         {
+            _hasOperationInSession = true;
             StatusText = result.Message;
             LastOperationSummary = BuildOperationSummary(result);
         }

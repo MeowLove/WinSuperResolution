@@ -1,5 +1,7 @@
 # WinSuperResolution
 
+[English](README.md) | [简体中文](docs/README.zh-CN.md) | [Русский](docs/README.ru-RU.md)
+
 Higher Virtual Resolution & HiDPI-Style Scaling for Windows.
 
 WinSuperResolution helps Windows users configure a higher virtual desktop resolution and combine it with Windows display scaling for a clearer, more spacious desktop experience similar in spirit to HiDPI.

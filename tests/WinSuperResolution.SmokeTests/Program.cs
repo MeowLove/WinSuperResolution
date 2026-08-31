@@ -3,6 +3,7 @@ using System.IO;
 using WinSuperResolution.Models;
 using WinSuperResolution.Resources;
 using WinSuperResolution.Services;
+using WinSuperResolution.ViewModels;
 
 namespace WinSuperResolution.SmokeTests
 {
@@ -17,6 +18,7 @@ namespace WinSuperResolution.SmokeTests
                 TestPrimarySurfaceFallbackPlan();
                 TestInvalidMagnification();
                 TestEmbeddedLocalization();
+                TestIdleOperationLocalization();
                 TestPortablePaths();
                 TestActiveSignalTargetSelection();
                 TestUniqueTopologyPromotion();
@@ -74,6 +76,24 @@ namespace WinSuperResolution.SmokeTests
             Assert(Strings.ForCulture("ru-RU")["Refresh"] == "Обновить", "Russian embedded resource is missing.");
             Assert(Strings.ForCulture("zh-CN")["ScanComplete"].StartsWith("扫描完成"), "Chinese scan status is not localized.");
             Assert(Strings.ForCulture("unknown")["ProductName"] == "WinSuperResolution", "Unsupported cultures must fall back to English.");
+        }
+
+        private static void TestIdleOperationLocalization()
+        {
+            MainViewModel viewModel = new MainViewModel();
+            string originalLanguage = viewModel.SelectedLanguage;
+            try
+            {
+                viewModel.SelectedLanguage = "en-US";
+                viewModel.SelectedLanguage = "zh-CN";
+                Assert(viewModel.LastOperationSummary == Strings.ForCulture("zh-CN")["NoOperationYet"], "Idle operation summary did not switch to Chinese.");
+                viewModel.SelectedLanguage = "ru-RU";
+                Assert(viewModel.LastOperationSummary == Strings.ForCulture("ru-RU")["NoOperationYet"], "Idle operation summary did not switch to Russian.");
+            }
+            finally
+            {
+                viewModel.SelectedLanguage = originalLanguage;
+            }
         }
 
         private static void TestPortablePaths()
@@ -165,6 +185,7 @@ namespace WinSuperResolution.SmokeTests
         {
             WinSuperResolution.MainWindow window = new WinSuperResolution.MainWindow();
             Assert(window.Content != null, "The WPF main-window markup did not initialize.");
+            Assert(window.Icon != null, "The WPF main-window icon did not load.");
         }
 
         private static DisplayConfigurationRecord CreateRecord(int primaryWidth, int primaryHeight, int activeWidth, int activeHeight)
