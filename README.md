@@ -8,6 +8,24 @@ WinSuperResolution helps Windows users configure a higher virtual desktop resolu
 
 <img width="256" height="256" alt="WinSuperResolution_Logo" src="https://github.com/user-attachments/assets/33560a97-8cd2-40d8-ae23-6dce05fd663e" />
 
+## Use Cases
+
+WinSuperResolution is designed for the following scenarios:
+
+- Use a higher virtual desktop resolution on 1080p-class displays to show more desktop content.
+- Use a higher virtual desktop resolution on 1440p-class displays to approach a 4K-style workspace.
+- Combine virtual resolution with Windows scaling to create a clearer, more spacious HiDPI-Style experience.
+- Improve layout and UI-size matching when the preferred scaling percentage is unavailable or produces an unsatisfactory result.
+- Balance readable text with available workspace instead of accepting an oversized or cramped interface.
+
+Typical examples include:
+
+- 1080p display → approximately 1.5K or higher virtual desktop resolution.
+- 1440p display → approximately 4K or higher virtual desktop resolution.
+- 4K display → a larger virtual workspace with an appropriate Windows scaling percentage.
+
+The usual workflow is: configure virtual-resolution capability, restart or reinitialize the display stack when required, choose the current Windows desktop mode, and then adjust Windows scaling. This improves layout, text readability, and workspace balance where applications support Windows DPI scaling; it does not change the panel's physical pixels or guarantee identical results in every application.
+
 ## What It Does
 
 - Scans registered display configurations, including historical entries.
