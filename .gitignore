@@ -1,12 +1,13 @@
 # Private local requirements documents
 /docs/archive/legacy/Windows 显示器超分辨率工具 (SuperResolutionTool) 需求文档_20250227_2100.md
-/docs/requirements/WinSuperResolution_Requirements_v2.0.md
+/docs/requirements/
 
 # Future WPF and Visual Studio local outputs
 /.vs/
 **/bin/
 **/obj/
 /artifacts/
+/deliverables/
 *.user
 *.suo
 *.pdb
