@@ -17,6 +17,9 @@ WinSuperResolution helps Windows users configure a higher virtual desktop resolu
 
 This tool changes Windows display configuration. It is not an AI image upscaler and does not provide NVIDIA DLSS, AMD FSR, Intel XeSS, or equivalent GPU rendering features.
 
+<img width="4320" height="2598" alt="image" src="https://github.com/user-attachments/assets/0b4a9972-723b-4125-aac2-e5680bcd9ad4" />
+
+
 ## Requirements
 
 - Windows 11 24H2 or later
