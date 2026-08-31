@@ -11,6 +11,7 @@ namespace WinSuperResolution.Services
         private const int DisplayDeviceAttachedToDesktop = 0x00000001;
         private const int DpiTypeEffective = 0;
         private const uint QdcOnlyActivePaths = 0x00000002;
+        private const uint QdcVirtualModeAware = 0x00000010;
         private const uint DisplayConfigDeviceInfoGetSourceName = 1;
         private const uint DisplayConfigDeviceInfoGetTargetName = 2;
 
@@ -61,15 +62,16 @@ namespace WinSuperResolution.Services
         private static IDictionary<string, DisplayTargetDetails> QueryActivePathDetails()
         {
             Dictionary<string, DisplayTargetDetails> values = new Dictionary<string, DisplayTargetDetails>(StringComparer.OrdinalIgnoreCase);
+            const uint queryFlags = QdcOnlyActivePaths | QdcVirtualModeAware;
             uint pathCount;
             uint modeCount;
-            if (GetDisplayConfigBufferSizes(QdcOnlyActivePaths, out pathCount, out modeCount) != 0 || pathCount == 0)
+            if (GetDisplayConfigBufferSizes(queryFlags, out pathCount, out modeCount) != 0 || pathCount == 0)
                 return values;
             DisplayConfigPathInfo[] paths = new DisplayConfigPathInfo[pathCount];
             DisplayConfigModeInfo[] modes = new DisplayConfigModeInfo[modeCount];
             uint suppliedPathCount = pathCount;
             uint suppliedModeCount = modeCount;
-            if (QueryDisplayConfig(QdcOnlyActivePaths, ref suppliedPathCount, paths, ref suppliedModeCount, modes, IntPtr.Zero) != 0)
+            if (QueryDisplayConfig(queryFlags, ref suppliedPathCount, paths, ref suppliedModeCount, modes, IntPtr.Zero) != 0)
                 return values;
             for (int index = 0; index < suppliedPathCount; index++)
             {
@@ -296,9 +298,8 @@ namespace WinSuperResolution.Services
             public uint ActiveHeight;
             public uint TotalWidth;
             public uint TotalHeight;
+            public uint VideoStandardOrAdditionalSignalInfo;
             public uint ScanLineOrdering;
-            public uint VideoStandard;
-            public uint Flags;
         }
 
         [StructLayout(LayoutKind.Explicit)]

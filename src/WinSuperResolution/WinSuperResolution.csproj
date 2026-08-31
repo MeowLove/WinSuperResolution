@@ -67,6 +67,7 @@
     <Compile Include="Services\DiagnosticsService.cs" />
     <Compile Include="Services\DisplayCatalogService.cs" />
     <Compile Include="Services\DisplayModeService.cs" />
+    <Compile Include="Services\VirtualDesktopModeService.cs" />
     <Compile Include="Services\ExperimentalScaleService.cs" />
     <Compile Include="Services\JournalService.cs" />
     <Compile Include="Services\LiveDisplayService.cs" />

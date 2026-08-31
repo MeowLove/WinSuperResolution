@@ -7,13 +7,17 @@ namespace WinSuperResolution.Models
         public int Height { get; set; }
         public int Frequency { get; set; }
         public int BitsPerPixel { get; set; }
+        public bool IsVirtualDesktopMode { get; set; }
+        public bool IsCurrent { get; set; }
+        public string ModeKindText { get; set; }
 
         public string DisplayText
         {
             get
             {
                 string frequency = Frequency > 1 ? " @ " + Frequency + " Hz" : string.Empty;
-                return Width + " x " + Height + frequency;
+                string kind = string.IsNullOrEmpty(ModeKindText) ? string.Empty : " - " + ModeKindText;
+                return Width + " x " + Height + frequency + kind;
             }
         }
     }

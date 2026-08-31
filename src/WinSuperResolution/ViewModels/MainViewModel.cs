@@ -380,9 +380,14 @@ namespace WinSuperResolution.ViewModels
             CurrentModeAvailability = LocalizeCurrentModeAvailability();
             if (SelectedRecord != null && SelectedRecord.CanManageCurrentState)
             {
-                foreach (DisplayMode mode in _displayModeService.EnumerateModes(SelectedRecord.LiveDisplay.DeviceName))
+                foreach (DisplayMode mode in _displayModeService.EnumerateModes(SelectedRecord))
+                {
+                    mode.ModeKindText = mode.IsVirtualDesktopMode ? Ui["ModeKindVirtualDesktop"] : Ui["ModeKindDriver"];
                     CurrentModes.Add(mode);
-                if (CurrentModes.Count > 0)
+                    if (mode.IsCurrent)
+                        SelectedMode = mode;
+                }
+                if (SelectedMode == null && CurrentModes.Count > 0)
                     SelectedMode = CurrentModes[0];
                 CurrentModeAvailability = CurrentModes.Count > 0 ? Ui["ModeAvailable"] : Ui["ModeNoModes"];
             }

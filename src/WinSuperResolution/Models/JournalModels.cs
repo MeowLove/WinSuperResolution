@@ -57,6 +57,7 @@ namespace WinSuperResolution.Models
         [DataMember] public int Height { get; set; }
         [DataMember] public int Frequency { get; set; }
         [DataMember] public int BitsPerPixel { get; set; }
+        [DataMember] public bool IsVirtualDesktopMode { get; set; }
         [DataMember] public DateTime CreatedUtc { get; set; }
         [DataMember] public bool Confirmed { get; set; }
     }

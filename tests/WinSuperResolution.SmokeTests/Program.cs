@@ -23,6 +23,8 @@ namespace WinSuperResolution.SmokeTests
                 TestDisplayIdentityIncludesDeviceName();
                 TestLiveDisplayEnumeration();
                 TestExperimentalScaleSafetyGate();
+                TestVirtualDesktopModeIndexes();
+                TestVirtualDesktopModePresentation();
                 TestWindowMarkupLoads();
                 Console.WriteLine("WinSuperResolution smoke tests passed.");
                 return 0;
@@ -134,6 +136,29 @@ namespace WinSuperResolution.SmokeTests
             Assert(service.GetAvailableScalePercentages(null).Count == 0, "Unknown displays must not expose scale options.");
             Assert(ExperimentalScaleService.GetBaselineScalePercent(150, -2) == 200, "DpiValue baseline mapping is incorrect.");
             Assert(ExperimentalScaleService.CalculateTargetDpiValue(200, 250) == 2, "DpiValue target mapping is incorrect.");
+        }
+
+        private static void TestVirtualDesktopModeIndexes()
+        {
+            const uint sourceModeIndex = 7;
+            const uint desktopImageIndex = 3;
+            uint packedSourceInfo = sourceModeIndex << 16;
+            uint packedTargetInfo = desktopImageIndex;
+            Assert(VirtualDesktopModeService.GetVirtualSourceModeInfoIndex(packedSourceInfo) == sourceModeIndex, "Virtual source mode index decoding is incorrect.");
+            Assert(VirtualDesktopModeService.GetVirtualDesktopImageModeInfoIndex(packedTargetInfo) == desktopImageIndex, "Virtual desktop image index decoding is incorrect.");
+        }
+
+        private static void TestVirtualDesktopModePresentation()
+        {
+            DisplayMode mode = new DisplayMode
+            {
+                Width = 4320,
+                Height = 2700,
+                Frequency = 120,
+                IsVirtualDesktopMode = true,
+                ModeKindText = Strings.ForCulture("zh-CN")["ModeKindVirtualDesktop"]
+            };
+            Assert(mode.DisplayText.Contains("4320 x 2700") && mode.DisplayText.Contains("虚拟桌面"), "Virtual desktop mode presentation is incomplete.");
         }
 
         private static void TestWindowMarkupLoads()
