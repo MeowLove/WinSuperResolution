@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Principal;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Win32;
 using WinSuperResolution.Models;
@@ -199,7 +200,7 @@ namespace WinSuperResolution.Services
 
         private string ExportScaleBackup(ScaleRegistryTarget target)
         {
-            string backupName = "PerMonitorSettings-" + MakeFileNameSafe(target.KeyName) + "-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss") + ".reg";
+            string backupName = "PerMonitorSettings-" + CreateShortBackupToken(target.RegistryPath) + "-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss") + ".reg";
             string backupPath = Path.Combine(AppPaths.BackupsDirectory, backupName);
             ProcessStartInfo startInfo = new ProcessStartInfo();
             startInfo.FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "reg.exe");
@@ -213,6 +214,15 @@ namespace WinSuperResolution.Services
                     throw new InvalidOperationException("reg export did not produce a valid per-monitor scale backup. Exit code: " + process.ExitCode + ".");
             }
             return backupPath;
+        }
+
+        private static string CreateShortBackupToken(string registryPath)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] digest = sha256.ComputeHash(Encoding.UTF8.GetBytes(registryPath ?? string.Empty));
+                return BitConverter.ToString(digest).Replace("-", string.Empty).Substring(0, 12).ToLowerInvariant();
+            }
         }
 
         private static ScaleJournal CreateJournal(DisplayConfigurationRecord record, ScaleRegistryTarget target, int targetScalePercent, int baselineScalePercent, int targetDpiValue)
@@ -328,13 +338,6 @@ namespace WinSuperResolution.Services
                 failure = exception;
                 return false;
             }
-        }
-
-        private static string MakeFileNameSafe(string value)
-        {
-            foreach (char invalid in Path.GetInvalidFileNameChars())
-                value = value.Replace(invalid, '_');
-            return value;
         }
 
         private static string Normalize(string value)
