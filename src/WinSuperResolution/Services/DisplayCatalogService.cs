@@ -165,10 +165,12 @@ namespace WinSuperResolution.Services
 
                 foreach (DisplayConfigurationRecord record in pair.Value)
                 {
-                    record.ConnectionStatus = ConnectionStatus.Conflicted;
+                    // Multiple registry roots can be historical configurations for one physical display.
+                    // Keep the records as Active + Candidate so virtual-capability planning remains compatible
+                    // with v2.1; direct current-mode changes still require an Active + Exact association.
                     record.DuplicateCandidateCount = pair.Value.Count;
                     record.CorrelationEvidence = "Multiple registered configuration roots match the same active Windows display by resolution only.";
-                    record.ScanWarning = "Duplicate candidate configuration. Virtual-resolution capability changes are disabled until the current registry configuration can be identified.";
+                    record.ScanWarning = "Candidate live association only. Current mode and experimental scaling controls stay disabled until an Exact match is proven.";
                 }
             }
         }

@@ -139,18 +139,21 @@ namespace WinSuperResolution.SmokeTests
             DisplayConfigurationRecord first = CreateRecord(3840, 2160, 3840, 2160);
             first.ConnectionStatus = ConnectionStatus.Active;
             first.MatchStatus = MatchStatus.Candidate;
+            first.ValidationStatus = ValidationStatus.Ready;
             first.LiveDisplay = display;
             DisplayConfigurationRecord second = CreateRecord(3840, 2160, 3840, 2160);
             second.ConnectionStatus = ConnectionStatus.Active;
             second.MatchStatus = MatchStatus.Candidate;
+            second.ValidationStatus = ValidationStatus.Ready;
             second.LiveDisplay = display;
 
             DisplayCatalogService.MarkDuplicateCandidateConfigurations(
                 new System.Collections.Generic.List<DisplayConfigurationRecord> { first, second });
 
-            Assert(first.ConnectionStatus == ConnectionStatus.Conflicted && second.ConnectionStatus == ConnectionStatus.Conflicted, "Duplicate Candidate records must not be reported as active displays.");
-            Assert(first.DuplicateCandidateCount == 2 && second.DuplicateCandidateCount == 2, "Duplicate Candidate records must retain the conflict count for diagnostics.");
-            Assert(!first.CanApplyVirtualCapability && !second.CanApplyVirtualCapability, "Duplicate Candidate records must not permit virtual-resolution capability writes.");
+            Assert(first.ConnectionStatus == ConnectionStatus.Active && second.ConnectionStatus == ConnectionStatus.Active, "Historical duplicate roots for one display must remain active candidates.");
+            Assert(first.MatchStatus == MatchStatus.Candidate && second.MatchStatus == MatchStatus.Candidate, "Historical duplicate roots must retain Candidate matching status.");
+            Assert(first.DuplicateCandidateCount == 2 && second.DuplicateCandidateCount == 2, "Duplicate Candidate records must retain the duplicate count for diagnostics.");
+            Assert(first.CanApplyVirtualCapability && second.CanApplyVirtualCapability, "Duplicate Candidate records must remain eligible for virtual-resolution capability writes.");
         }
 
         private static void TestDiagnosticExportIncludesLongNamedBackup()
