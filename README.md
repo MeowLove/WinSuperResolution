@@ -59,6 +59,21 @@ This tool changes Windows display configuration. It is not an AI image upscaler 
 
 The **Display Settings** button remains available for manual Windows configuration.
 
+## Troubleshooting and GitHub Issues
+
+If a display is shown as `Candidate` or `Configuration conflict`, or if WinSuperResolution lists more active displays than are physically connected, do not apply a virtual-resolution or scaling change. The application keeps these associations read-only until the registry configuration can be identified safely.
+
+To report a problem:
+
+1. Reproduce the problem and note what you expected and what happened.
+2. In WinSuperResolution, click **Export Diagnostic Package**.
+3. Find the generated ZIP beside the executable under `diagnostics/WinSuperResolution-diagnostic-*.zip`.
+4. Open a [GitHub Issue](https://github.com/MeowLove/WinSuperResolution/issues), describe the steps to reproduce, and attach the ZIP by dragging it into the issue form.
+
+Please include the WinSuperResolution version, Windows version/build, number of physical displays, connection type, and whether the issue persists after restarting Windows. Do not upload screenshots alone when a diagnostic package is available; the package contains the structured evidence needed to investigate display association and registry state.
+
+Diagnostic packages may contain application logs, operation journals, registry exports, existing registry backups, display-state snapshots, application settings, monitor identifiers, and local file paths. Review the ZIP before uploading and redact or remove anything you do not want to share. The package is created locally and is not uploaded automatically by the application.
+
 ## Portable Data
 
 The application stores its settings and recovery data beside the executable:

@@ -58,6 +58,21 @@ WinSuperResolution 适用于以下场景：
 
 程序仍保留“显示设置”按钮，用户可以随时使用 Windows 自带设置手动调整。
 
+## 排障与 GitHub Issues
+
+如果某个显示器显示为“候选（Candidate）”或“配置冲突（Configuration conflict）”，或者程序列出的活动显示器数量多于实际连接的显示器，请先不要应用虚拟分辨率或缩放。程序在无法安全确认注册表配置对应关系时会保持只读状态。
+
+提交问题前，请按以下步骤导出诊断包：
+
+1. 重现问题，并记录“预期结果”和“实际结果”。
+2. 在 WinSuperResolution 中点击“导出诊断包（Export Diagnostic Package）”。
+3. 在程序 EXE 所在目录的 `diagnostics/` 下找到生成的 `WinSuperResolution-diagnostic-*.zip`。
+4. 打开 [GitHub Issues](https://github.com/MeowLove/WinSuperResolution/issues)，写明复现步骤，并将 ZIP 文件拖入 Issue 表单作为附件。
+
+请同时提供 WinSuperResolution 版本、Windows 版本/内部版本号、实际显示器数量、连接方式，以及重启 Windows 后问题是否仍然存在。已有诊断包时，不要只提交截图；诊断包包含排查显示器关联和注册表状态所需的结构化信息。
+
+诊断包可能包含程序日志、操作日志、注册表导出、已有注册表备份、显示状态快照、程序设置、显示器标识和本地文件路径。上传前请检查 ZIP 内容，并删除或打码不希望公开的信息。诊断包只会在本地生成，程序不会自动上传。
+
 ## 便携数据
 
 程序会将配置和恢复数据保存在 EXE 所在目录：
