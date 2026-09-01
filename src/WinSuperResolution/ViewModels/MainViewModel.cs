@@ -254,7 +254,16 @@ namespace WinSuperResolution.ViewModels
                     LocalizeRecordPresentation(record);
                     Records.Add(record);
                 }
-                SelectedRecord = Records.Count > 0 ? Records[0] : null;
+                DisplayConfigurationRecord preferredRecord = null;
+                foreach (DisplayConfigurationRecord record in Records)
+                {
+                    if (record.CanManageCurrentState)
+                    {
+                        preferredRecord = record;
+                        break;
+                    }
+                }
+                SelectedRecord = preferredRecord ?? (Records.Count > 0 ? Records[0] : null);
                 PlanSummary = Ui["NoPlan"];
                 StatusText = string.Format(Ui["ScanComplete"], Records.Count, CountTargets());
                 OnPropertyChanged("CanApplyAllCapabilities");
@@ -388,7 +397,7 @@ namespace WinSuperResolution.ViewModels
             builder.AppendLine("Writable targets: " + CountTargets());
             foreach (DisplayConfigurationRecord record in Records)
             {
-                builder.AppendLine("Configuration: " + record.ConfigurationKey + " | primary=" + record.PrimarySurfaceText + " | signal=" + record.ActiveSignalText + " | validation=" + record.ValidationStatus + " | connection=" + record.ConnectionStatus + " | match=" + record.MatchStatus + " | duplicateCandidates=" + record.DuplicateCandidateCount);
+                builder.AppendLine("Configuration: " + record.ConfigurationKey + " | primary=" + record.PrimarySurfaceText + " | signal=" + record.ActiveSignalText + " | validation=" + record.ValidationStatus + " | connection=" + record.ConnectionStatus + " | match=" + record.MatchStatus + " | duplicateCandidates=" + record.DuplicateCandidateCount + " | supersededByExact=" + record.SupersededByExactMatch);
                 if (record.LiveDisplay != null)
                 {
                     LiveDisplayInfo display = record.LiveDisplay;

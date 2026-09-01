@@ -43,10 +43,11 @@ namespace WinSuperResolution.Services
             }
 
             PromoteUniqueTopologyMatches(records, liveDisplays);
+            PromoteStableIdentityMatches(records, liveDisplays);
             MarkDuplicateCandidateConfigurations(records);
 
             foreach (DisplayConfigurationRecord record in records)
-                _diagnostics.Write("Display record " + record.ConfigurationKey + ": targets=" + record.RegistryTargets.Count + ", primary=" + record.PrimarySurfaceText + ", activeSignal=" + record.ActiveSignalText + ", connection=" + record.ConnectionStatus + ", match=" + record.MatchStatus + ", duplicateCandidates=" + record.DuplicateCandidateCount);
+                _diagnostics.Write("Display record " + record.ConfigurationKey + ": targets=" + record.RegistryTargets.Count + ", primary=" + record.PrimarySurfaceText + ", activeSignal=" + record.ActiveSignalText + ", connection=" + record.ConnectionStatus + ", match=" + record.MatchStatus + ", duplicateCandidates=" + record.DuplicateCandidateCount + ", supersededByExact=" + record.SupersededByExactMatch);
             _diagnostics.Write("Scanned " + records.Count + " registered display configuration root(s) and " + liveDisplays.Count + " active Windows display(s).");
             return records;
         }
@@ -175,6 +176,52 @@ namespace WinSuperResolution.Services
             }
         }
 
+        internal static void PromoteStableIdentityMatches(IList<DisplayConfigurationRecord> records, IList<LiveDisplayInfo> liveDisplays)
+        {
+            foreach (LiveDisplayInfo display in liveDisplays)
+            {
+                List<DisplayConfigurationRecord> resolutionMatches = new List<DisplayConfigurationRecord>();
+                foreach (DisplayConfigurationRecord record in records)
+                {
+                    if (record != null && record.ConnectionStatus == ConnectionStatus.Active && record.MatchStatus == MatchStatus.Candidate && record.LiveDisplay == display && MatchesResolutionEvidence(record, display))
+                        resolutionMatches.Add(record);
+                }
+
+                if (resolutionMatches.Count < 2)
+                    continue;
+
+                List<DisplayConfigurationRecord> identityMatches = new List<DisplayConfigurationRecord>();
+                foreach (DisplayConfigurationRecord record in resolutionMatches)
+                {
+                    if (HasStableIdentityEvidence(record.ConfigurationKey, display))
+                        identityMatches.Add(record);
+                }
+
+                if (identityMatches.Count != 1)
+                    continue;
+
+                DisplayConfigurationRecord exact = identityMatches[0];
+                exact.MatchStatus = MatchStatus.Exact;
+                exact.DuplicateCandidateCount = 0;
+                exact.CorrelationEvidence = "Unique EDID/monitor identity evidence and current-mode evidence matched.";
+                exact.ScanWarning = string.Empty;
+
+                foreach (DisplayConfigurationRecord record in resolutionMatches)
+                {
+                    if (record == exact)
+                        continue;
+
+                    record.ConnectionStatus = ConnectionStatus.Historical;
+                    record.MatchStatus = MatchStatus.Unmatched;
+                    record.LiveDisplay = null;
+                    record.DuplicateCandidateCount = 0;
+                    record.SupersededByExactMatch = true;
+                    record.CorrelationEvidence = "Multiple registered configuration roots match the same active Windows display by resolution only.";
+                    record.ScanWarning = "Duplicate candidate configuration. Virtual-resolution capability changes are disabled until the current registry configuration can be identified.";
+                }
+            }
+        }
+
         private static void CorrelateLiveDisplay(DisplayConfigurationRecord record, IList<LiveDisplayInfo> liveDisplays)
         {
             List<LiveDisplayInfo> candidates = new List<LiveDisplayInfo>();
@@ -240,6 +287,9 @@ namespace WinSuperResolution.Services
             string[] monitorIdParts = (display.MonitorDeviceId ?? string.Empty).Split('\\');
             if (monitorIdParts.Length >= 3)
             {
+                string modelToken = Normalize(monitorIdParts[1]);
+                if (modelToken.Length >= 7 && key.IndexOf(modelToken, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                    return true;
                 string instanceToken = Normalize(monitorIdParts[2]);
                 if (instanceToken.Length >= 12 && key.IndexOf(instanceToken, System.StringComparison.OrdinalIgnoreCase) >= 0)
                     return true;

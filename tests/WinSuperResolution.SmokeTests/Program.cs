@@ -24,6 +24,7 @@ namespace WinSuperResolution.SmokeTests
                 TestActiveSignalTargetSelection();
                 TestUniqueTopologyPromotion();
                 TestDuplicateCandidateConfigurationProtection();
+                TestStableIdentityResolvesDuplicateCandidates();
                 TestDiagnosticExportIncludesLongNamedBackup();
                 TestDisplayIdentityIncludesDeviceName();
                 TestLiveDisplayEnumeration();
@@ -157,6 +158,38 @@ namespace WinSuperResolution.SmokeTests
             Assert(first.MatchStatus == MatchStatus.Candidate && second.MatchStatus == MatchStatus.Candidate, "Historical duplicate roots must retain Candidate matching status.");
             Assert(first.DuplicateCandidateCount == 2 && second.DuplicateCandidateCount == 2, "Duplicate Candidate records must retain the duplicate count for diagnostics.");
             Assert(first.CanApplyVirtualCapability && second.CanApplyVirtualCapability, "Duplicate Candidate records must remain eligible for virtual-resolution capability writes.");
+        }
+
+        private static void TestStableIdentityResolvesDuplicateCandidates()
+        {
+            LiveDisplayInfo display = new LiveDisplayInfo
+            {
+                DeviceName = @"\\.\DISPLAY1",
+                MonitorDeviceId = @"MONITOR\TMA2004\4&11FF7B6D&0&UID8388688",
+                CurrentWidth = 2880,
+                CurrentHeight = 1800,
+                IsAttachedToDesktop = true
+            };
+            DisplayConfigurationRecord stale = CreateRecord(5760, 3600, 2880, 1800);
+            stale.ConfigurationKey = "SIMULATED_8086_7D55^47C59A57D12AD85FFAC996EBA9429A77";
+            stale.ConnectionStatus = ConnectionStatus.Active;
+            stale.MatchStatus = MatchStatus.Candidate;
+            stale.ValidationStatus = ValidationStatus.Ready;
+            stale.LiveDisplay = display;
+            DisplayConfigurationRecord exact = CreateRecord(5760, 3600, 2880, 1800);
+            exact.ConfigurationKey = "TMA20040_28_07E7_A7^E2906A7A64D0F55109B9880C09E758B8";
+            exact.ConnectionStatus = ConnectionStatus.Active;
+            exact.MatchStatus = MatchStatus.Candidate;
+            exact.ValidationStatus = ValidationStatus.Ready;
+            exact.LiveDisplay = display;
+
+            DisplayCatalogService.PromoteStableIdentityMatches(
+                new System.Collections.Generic.List<DisplayConfigurationRecord> { stale, exact },
+                new System.Collections.Generic.List<LiveDisplayInfo> { display });
+
+            Assert(exact.MatchStatus == MatchStatus.Exact && exact.CanManageCurrentState, "A unique stable monitor identity must promote the matching duplicate root to Exact.");
+            Assert(stale.ConnectionStatus == ConnectionStatus.Historical && stale.MatchStatus == MatchStatus.Unmatched, "Superseded duplicate roots must be historical and unmatched.");
+            Assert(!stale.CanApplyVirtualCapability, "Superseded duplicate roots must not receive capability writes.");
         }
 
         private static void TestDiagnosticExportIncludesLongNamedBackup()
