@@ -288,7 +288,7 @@ namespace WinSuperResolution.Services
             if (monitorIdParts.Length >= 3)
             {
                 string modelToken = Normalize(monitorIdParts[1]);
-                if (modelToken.Length >= 7 && key.IndexOf(modelToken, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                if (modelToken.Length >= 6 && key.IndexOf(modelToken, System.StringComparison.OrdinalIgnoreCase) >= 0)
                     return true;
                 string instanceToken = Normalize(monitorIdParts[2]);
                 if (instanceToken.Length >= 12 && key.IndexOf(instanceToken, System.StringComparison.OrdinalIgnoreCase) >= 0)

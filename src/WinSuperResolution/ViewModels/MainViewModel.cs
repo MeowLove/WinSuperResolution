@@ -392,7 +392,7 @@ namespace WinSuperResolution.ViewModels
         public string BuildDiagnosticSummary()
         {
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine("WinSuperResolution v2.2 diagnostic");
+            builder.AppendLine("WinSuperResolution v2.3 diagnostic");
             builder.AppendLine("Registered configuration roots: " + Records.Count);
             builder.AppendLine("Writable targets: " + CountTargets());
             foreach (DisplayConfigurationRecord record in Records)
