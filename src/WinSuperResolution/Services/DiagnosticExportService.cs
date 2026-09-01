@@ -111,10 +111,13 @@ namespace WinSuperResolution.Services
             }
             try
             {
+                string destinationRoot = Path.Combine(stagingDirectory, packageDirectory.Replace('/', Path.DirectorySeparatorChar));
+                Directory.CreateDirectory(destinationRoot);
                 foreach (string sourcePath in Directory.GetFiles(sourceDirectory, "*", SearchOption.AllDirectories))
                 {
                     string relative = sourcePath.Substring(sourceDirectory.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-                    CopyOptionalFile(sourcePath, stagingDirectory, packageDirectory + "/" + relative.Replace('\\', '/'), failures);
+                    string destinationPath = Path.Combine(destinationRoot, relative);
+                    CopyFile(sourcePath, destinationPath, packageDirectory + "/" + relative.Replace('\\', '/'), failures);
                 }
             }
             catch (Exception exception)
@@ -133,6 +136,18 @@ namespace WinSuperResolution.Services
             try
             {
                 string destinationPath = Path.Combine(stagingDirectory, packagePath.Replace('/', Path.DirectorySeparatorChar));
+                CopyFile(sourcePath, destinationPath, packagePath, failures);
+            }
+            catch (Exception exception)
+            {
+                failures.Add(packagePath + ": " + exception.Message);
+            }
+        }
+
+        private static void CopyFile(string sourcePath, string destinationPath, string packagePath, IList<string> failures)
+        {
+            try
+            {
                 string destinationDirectory = Path.GetDirectoryName(destinationPath);
                 if (!string.IsNullOrEmpty(destinationDirectory))
                     Directory.CreateDirectory(destinationDirectory);
@@ -225,7 +240,7 @@ namespace WinSuperResolution.Services
         private static string FormatRegistryValue(RegistryValueKind kind, object value)
         {
             if (kind == RegistryValueKind.DWord)
-                return "dword:" + Convert.ToUInt32(value).ToString("x8");
+                return "dword:" + ToUnsignedDword(value).ToString("x8");
             if (kind == RegistryValueKind.QWord)
                 return "hex(b):" + BitConverter.ToString(BitConverter.GetBytes(Convert.ToUInt64(value))).Replace("-", ",").ToLowerInvariant();
             if (kind == RegistryValueKind.Binary)
@@ -233,6 +248,13 @@ namespace WinSuperResolution.Services
             if (kind == RegistryValueKind.MultiString)
                 return "hex(7):" + BitConverter.ToString(System.Text.Encoding.Unicode.GetBytes(string.Join("\0", (string[])value) + "\0\0")).Replace("-", ",").ToLowerInvariant();
             return "\"" + Escape(Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture)) + "\"";
+        }
+
+        private static uint ToUnsignedDword(object value)
+        {
+            if (value is int)
+                return unchecked((uint)(int)value);
+            return Convert.ToUInt32(value, System.Globalization.CultureInfo.InvariantCulture);
         }
 
         private static string Escape(string value)
