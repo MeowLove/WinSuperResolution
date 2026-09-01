@@ -10,6 +10,9 @@ namespace WinSuperResolution.Services
     internal sealed class DiagnosticExportService
     {
         private const string ConfigurationRegistryPath = @"SYSTEM\CurrentControlSet\Control\GraphicsDrivers\Configuration";
+        private const string ConnectivityRegistryPath = @"SYSTEM\CurrentControlSet\Control\GraphicsDrivers\Connectivity";
+        private const string ScaleFactorsRegistryPath = @"SYSTEM\CurrentControlSet\Control\GraphicsDrivers\ScaleFactors";
+        private const string PerMonitorSettingsRegistryPath = @"Control Panel\Desktop\PerMonitorSettings";
 
         internal DiagnosticExportResult Export(string summary)
         {
@@ -25,11 +28,15 @@ namespace WinSuperResolution.Services
                 Directory.CreateDirectory(stagingDirectory);
                 WriteText(stagingDirectory, "summary.txt", BuildSummary(summary, failures));
                 WriteText(stagingDirectory, "manifest.txt", BuildManifest());
+                CopyOptionalFile(AppPaths.SettingsPath, stagingDirectory, "application-settings.json", failures);
                 CopyOptionalFile(Path.Combine(AppPaths.LogsDirectory, "WinSuperResolution.log"), stagingDirectory, "logs/WinSuperResolution.log", failures);
                 CopyOptionalDirectory(AppPaths.JournalsDirectory, stagingDirectory, "journals", failures);
                 CopyOptionalDirectory(AppPaths.BackupsDirectory, stagingDirectory, "registry-backups", failures);
                 CopyOptionalDirectory(AppPaths.DisplayStateDirectory, stagingDirectory, "display-state", failures);
-                ExportConfigurationRegistry(Path.Combine(stagingDirectory, "registry", "GraphicsDrivers-Configuration.reg"), failures);
+                ExportRegistryTree(Registry.LocalMachine, ConfigurationRegistryPath, @"HKEY_LOCAL_MACHINE\" + ConfigurationRegistryPath, Path.Combine(stagingDirectory, "registry", "GraphicsDrivers-Configuration.reg"), failures);
+                ExportRegistryTree(Registry.LocalMachine, ConnectivityRegistryPath, @"HKEY_LOCAL_MACHINE\" + ConnectivityRegistryPath, Path.Combine(stagingDirectory, "registry", "GraphicsDrivers-Connectivity.reg"), failures);
+                ExportRegistryTree(Registry.LocalMachine, ScaleFactorsRegistryPath, @"HKEY_LOCAL_MACHINE\" + ScaleFactorsRegistryPath, Path.Combine(stagingDirectory, "registry", "GraphicsDrivers-ScaleFactors.reg"), failures);
+                ExportRegistryTree(Registry.CurrentUser, PerMonitorSettingsRegistryPath, @"HKEY_CURRENT_USER\" + PerMonitorSettingsRegistryPath, Path.Combine(stagingDirectory, "current-user", "PerMonitorSettings.reg"), failures);
                 WriteText(stagingDirectory, "summary.txt", BuildSummary(summary, failures));
                 ZipFile.CreateFromDirectory(stagingDirectory, archivePath, CompressionLevel.Optimal, false);
                 return new DiagnosticExportResult(true, archivePath, failures);
@@ -61,6 +68,9 @@ namespace WinSuperResolution.Services
                 + "Application: WinSuperResolution" + Environment.NewLine
                 + "AssemblyVersion: " + (version == null ? "unknown" : version.ToString()) + Environment.NewLine
                 + "OSVersion: " + Environment.OSVersion.Version + Environment.NewLine
+                + "WindowsProductName: " + ReadRegistryString(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName") + Environment.NewLine
+                + "WindowsDisplayVersion: " + ReadRegistryString(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "DisplayVersion") + Environment.NewLine
+                + "WindowsBuild: " + ReadRegistryString(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentBuildNumber") + "." + ReadRegistryString(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "UBR") + Environment.NewLine
                 + "64BitOS: " + Environment.Is64BitOperatingSystem + Environment.NewLine
                 + "64BitProcess: " + Environment.Is64BitProcess + Environment.NewLine;
         }
@@ -75,9 +85,13 @@ namespace WinSuperResolution.Services
             writer.WriteLine();
             writer.WriteLine("Included artifacts:");
             writer.WriteLine("- manifest.txt");
+            writer.WriteLine("- application-settings.json (when available)");
             writer.WriteLine("- logs/WinSuperResolution.log (when available)");
             writer.WriteLine("- journals/, registry-backups/, display-state/ (when available)");
             writer.WriteLine("- registry/GraphicsDrivers-Configuration.reg");
+            writer.WriteLine("- registry/GraphicsDrivers-Connectivity.reg");
+            writer.WriteLine("- registry/GraphicsDrivers-ScaleFactors.reg");
+            writer.WriteLine("- current-user/PerMonitorSettings.reg");
             if (failures.Count > 0)
             {
                 writer.WriteLine();
@@ -139,29 +153,29 @@ namespace WinSuperResolution.Services
             File.WriteAllText(destinationPath, content ?? string.Empty);
         }
 
-        private static void ExportConfigurationRegistry(string outputPath, IList<string> failures)
+        private static void ExportRegistryTree(RegistryKey hive, string registryPath, string displayPath, string outputPath, IList<string> failures)
         {
             try
             {
                 string directory = Path.GetDirectoryName(outputPath);
                 Directory.CreateDirectory(directory);
                 using (StreamWriter writer = new StreamWriter(outputPath, false, System.Text.Encoding.Unicode))
-                using (RegistryKey root = Registry.LocalMachine.OpenSubKey(ConfigurationRegistryPath, false))
+                using (RegistryKey root = hive.OpenSubKey(registryPath, false))
                 {
                     writer.WriteLine("Windows Registry Editor Version 5.00");
                     writer.WriteLine();
                     if (root == null)
                     {
-                        writer.WriteLine("; Registry key unavailable: HKLM\\" + ConfigurationRegistryPath);
-                        failures.Add("registry/GraphicsDrivers-Configuration.reg: registry key unavailable");
+                        writer.WriteLine("; Registry key unavailable: " + displayPath);
+                        failures.Add(outputPath + ": registry key unavailable");
                         return;
                     }
-                    WriteRegistryKey(writer, root, @"HKEY_LOCAL_MACHINE\" + ConfigurationRegistryPath);
+                    WriteRegistryKey(writer, root, displayPath);
                 }
             }
             catch (Exception exception)
             {
-                failures.Add("registry/GraphicsDrivers-Configuration.reg: " + exception.Message);
+                failures.Add(outputPath + ": " + exception.Message);
                 try
                 {
                     File.WriteAllText(outputPath, "Windows Registry Editor Version 5.00" + Environment.NewLine + "; Export failed: " + exception.Message, System.Text.Encoding.Unicode);
@@ -170,6 +184,22 @@ namespace WinSuperResolution.Services
                 {
                     // The failure is already reported in summary.txt.
                 }
+            }
+        }
+
+        private static string ReadRegistryString(RegistryKey hive, string registryPath, string valueName)
+        {
+            try
+            {
+                using (RegistryKey key = hive.OpenSubKey(registryPath, false))
+                {
+                    object value = key == null ? null : key.GetValue(valueName, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
+                    return value == null ? "unavailable" : Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture);
+                }
+            }
+            catch
+            {
+                return "unavailable";
             }
         }
 
