@@ -558,7 +558,7 @@ namespace WinSuperResolution.ViewModels
         {
             if (evidence == "Unique EDID/monitor identity evidence and current-mode evidence matched.") return Ui["EvidenceExact"];
             if (evidence == "Unique active topology and current-mode resolution evidence matched; the registry key has no stable monitor token.") return Ui["EvidenceTopologyUnique"];
-            if (evidence == "Current-mode resolution matches, but the registry key lacks a unique monitor instance token.") return Ui["EvidenceCandidate"];
+            if (evidence == "Current-mode resolution matches; stable monitor identity will be evaluated across all registered candidates.") return Ui["EvidenceCandidate"];
             if (evidence == "No active Windows display has compatible resolution evidence.") return Ui["EvidenceUnmatched"];
             if (evidence == "Multiple active displays match only resolution evidence.") return Ui["EvidenceAmbiguous"];
             if (evidence == "Multiple registered configuration roots match the same active Windows display by resolution only.") return Ui["EvidenceDuplicate"];
@@ -567,7 +567,7 @@ namespace WinSuperResolution.ViewModels
 
         private string LocalizeWarning(string warning)
         {
-            if (warning == "Candidate live association only. Current mode and experimental scaling controls stay disabled until an Exact match is proven.") return Ui["WarningCandidate"];
+            if (warning == "Candidate live association only. Current desktop mode, experimental scaling, and virtual-capability writes stay disabled until an Exact match is proven.") return Ui["WarningCandidate"];
             if (warning == "Historical or uncorrelated registry configuration. It remains eligible for virtual-capability planning, but current mode and scale controls are disabled.") return Ui["WarningUnmatched"];
             if (warning == "Ambiguous live association. The record is not treated as the current display.") return Ui["WarningAmbiguous"];
             if (warning == "Duplicate candidate configuration. Virtual-resolution capability changes are disabled until the current registry configuration can be identified.") return Ui["WarningDuplicate"];

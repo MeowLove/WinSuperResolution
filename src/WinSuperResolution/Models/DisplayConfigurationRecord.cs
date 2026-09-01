@@ -75,7 +75,12 @@ namespace WinSuperResolution.Models
 
         public bool CanApplyVirtualCapability
         {
-            get { return (ValidationStatus == ValidationStatus.Ready || ValidationStatus == ValidationStatus.Warning) && ConnectionStatus != ConnectionStatus.Conflicted && !SupersededByExactMatch; }
+            get
+            {
+                bool valid = ValidationStatus == ValidationStatus.Ready || ValidationStatus == ValidationStatus.Warning;
+                bool activeUnresolved = ConnectionStatus == ConnectionStatus.Active && MatchStatus != MatchStatus.Exact;
+                return valid && ConnectionStatus != ConnectionStatus.Conflicted && !SupersededByExactMatch && !activeUnresolved;
+            }
         }
 
         public string DisplayIdentity

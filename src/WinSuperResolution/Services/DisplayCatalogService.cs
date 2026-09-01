@@ -42,7 +42,6 @@ namespace WinSuperResolution.Services
                 }
             }
 
-            PromoteUniqueTopologyMatches(records, liveDisplays);
             PromoteStableIdentityMatches(records, liveDisplays);
             MarkDuplicateCandidateConfigurations(records);
 
@@ -122,26 +121,6 @@ namespace WinSuperResolution.Services
             return targets[0];
         }
 
-        internal static void PromoteUniqueTopologyMatches(IList<DisplayConfigurationRecord> records, IList<LiveDisplayInfo> liveDisplays)
-        {
-            foreach (LiveDisplayInfo display in liveDisplays)
-            {
-                List<DisplayConfigurationRecord> matches = new List<DisplayConfigurationRecord>();
-                foreach (DisplayConfigurationRecord record in records)
-                {
-                    if (MatchesResolutionEvidence(record, display))
-                        matches.Add(record);
-                }
-                if (matches.Count != 1 || matches[0].MatchStatus != MatchStatus.Candidate)
-                    continue;
-
-                DisplayConfigurationRecord unique = matches[0];
-                unique.MatchStatus = MatchStatus.Exact;
-                unique.CorrelationEvidence = "Unique active topology and current-mode resolution evidence matched; the registry key has no stable monitor token.";
-                unique.ScanWarning = string.Empty;
-            }
-        }
-
         internal static void MarkDuplicateCandidateConfigurations(IList<DisplayConfigurationRecord> records)
         {
             Dictionary<string, List<DisplayConfigurationRecord>> candidatesByDevice = new Dictionary<string, List<DisplayConfigurationRecord>>(StringComparer.OrdinalIgnoreCase);
@@ -166,12 +145,10 @@ namespace WinSuperResolution.Services
 
                 foreach (DisplayConfigurationRecord record in pair.Value)
                 {
-                    // Multiple registry roots can be historical configurations for one physical display.
-                    // Keep the records as Active + Candidate so virtual-capability planning remains compatible
-                    // with v2.1; direct current-mode changes still require an Active + Exact association.
+                    // Keep unresolved roots visible for diagnostics, but active candidates are read-only.
                     record.DuplicateCandidateCount = pair.Value.Count;
                     record.CorrelationEvidence = "Multiple registered configuration roots match the same active Windows display by resolution only.";
-                    record.ScanWarning = "Candidate live association only. Current mode and experimental scaling controls stay disabled until an Exact match is proven.";
+                    record.ScanWarning = "Candidate live association only. Current desktop mode, experimental scaling, and virtual-capability writes stay disabled until an Exact match is proven.";
                 }
             }
         }
@@ -183,11 +160,11 @@ namespace WinSuperResolution.Services
                 List<DisplayConfigurationRecord> resolutionMatches = new List<DisplayConfigurationRecord>();
                 foreach (DisplayConfigurationRecord record in records)
                 {
-                    if (record != null && record.ConnectionStatus == ConnectionStatus.Active && record.MatchStatus == MatchStatus.Candidate && record.LiveDisplay == display && MatchesResolutionEvidence(record, display))
+                    if (record != null && record.ConnectionStatus == ConnectionStatus.Active && record.LiveDisplay == display && MatchesResolutionEvidence(record, display))
                         resolutionMatches.Add(record);
                 }
 
-                if (resolutionMatches.Count < 2)
+                if (resolutionMatches.Count == 0)
                     continue;
 
                 List<DisplayConfigurationRecord> identityMatches = new List<DisplayConfigurationRecord>();
@@ -252,18 +229,9 @@ namespace WinSuperResolution.Services
             LiveDisplayInfo candidate = candidates[0];
             record.LiveDisplay = candidate;
             record.ConnectionStatus = ConnectionStatus.Active;
-            if (HasStableIdentityEvidence(record.ConfigurationKey, candidate))
-            {
-                record.MatchStatus = MatchStatus.Exact;
-                record.CorrelationEvidence = "Unique EDID/monitor identity evidence and current-mode evidence matched.";
-                record.ScanWarning = string.Empty;
-            }
-            else
-            {
-                record.MatchStatus = MatchStatus.Candidate;
-                record.CorrelationEvidence = "Current-mode resolution matches, but the registry key lacks a unique monitor instance token.";
-                record.ScanWarning = "Candidate live association only. Current mode and experimental scaling controls stay disabled until an Exact match is proven.";
-            }
+            record.MatchStatus = MatchStatus.Candidate;
+            record.CorrelationEvidence = "Current-mode resolution matches; stable monitor identity will be evaluated across all registered candidates.";
+            record.ScanWarning = "Candidate live association only. Current desktop mode, experimental scaling, and virtual-capability writes stay disabled until an Exact match is proven.";
         }
 
         private static bool MatchesResolutionEvidence(DisplayConfigurationRecord record, LiveDisplayInfo display)

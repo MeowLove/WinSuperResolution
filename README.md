@@ -61,7 +61,7 @@ The **Display Settings** button remains available for manual Windows configurati
 
 ## Troubleshooting and GitHub Issues
 
-If a display is shown as `Candidate` or `Configuration conflict`, or if WinSuperResolution lists more active displays than are physically connected, do not apply a virtual-resolution or scaling change. The application keeps these associations read-only until the registry configuration can be identified safely.
+If an active display is shown as `Candidate` or `Configuration conflict`, or if WinSuperResolution lists more active displays than are physically connected, do not apply a desktop-mode, scaling, or virtual-capability change. Registry rows are configurations, not physical-display counts; only a unique stable identity match becomes `Active + Exact`. Historical, non-superseded rows may remain eligible for separate virtual-capability planning.
 
 To report a problem:
 
@@ -74,7 +74,7 @@ Please include the WinSuperResolution version, Windows version/build, number of 
 
 Diagnostic packages may contain application logs, operation journals, registry exports, existing registry backups, display-state snapshots, application settings, monitor identifiers, and local file paths. Review the ZIP before uploading and redact or remove anything you do not want to share. The package is created locally and is not uploaded automatically by the application.
 
-If the display-association problem persists after exporting a diagnostic package, use **Reset display cache (final repair)** only as a last resort. The application backs up and deletes the Windows \`GraphicsDrivers\\Configuration\`, \`Connectivity\`, and \`ScaleFactors\` caches, then immediately restarts Windows so it can rebuild them. Save your work first; this resets display configuration for all monitors.
+If the display-association problem persists after exporting a diagnostic package, use **Reset display cache (final repair)** only as a last resort. After your confirmation, the application writes backups and a Journal first, deletes the Windows `GraphicsDrivers\\Configuration`, `Connectivity`, and `ScaleFactors` caches only after the backups succeed, then immediately restarts Windows so it can rebuild them. Save your work first; this resets display configuration for all monitors. A failed or partial reset does not request an automatic restart.
 
 ## Portable Data
 
@@ -85,6 +85,7 @@ The application stores its settings and recovery data beside the executable:
 - `backup_journal/`
 - `display_state/`
 - `logs/`
+- `diagnostics/`
 
 Move the executable directory as a whole to preserve the portable configuration.
 

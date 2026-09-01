@@ -60,7 +60,7 @@ WinSuperResolution 适用于以下场景：
 
 ## 排障与 GitHub Issues
 
-如果某个显示器显示为“候选（Candidate）”或“配置冲突（Configuration conflict）”，或者程序列出的活动显示器数量多于实际连接的显示器，请先不要应用虚拟分辨率或缩放。程序在无法安全确认注册表配置对应关系时会保持只读状态。
+如果某个活动显示器显示为“候选（Candidate）”或“配置冲突（Configuration conflict）”，或者程序列出的活动显示器数量多于实际连接的显示器，请先不要应用桌面分辨率、缩放或虚拟分辨率能力。列表行是注册表配置，不等于物理显示器数量；只有唯一稳定身份匹配才会成为 `Active + Exact`。未被取代的历史配置仍可单独用于生成虚拟分辨率能力计划。
 
 提交问题前，请按以下步骤导出诊断包：
 
@@ -73,7 +73,7 @@ WinSuperResolution 适用于以下场景：
 
 诊断包可能包含程序日志、操作日志、注册表导出、已有注册表备份、显示状态快照、程序设置、显示器标识和本地文件路径。上传前请检查 ZIP 内容，并删除或打码不希望公开的信息。诊断包只会在本地生成，程序不会自动上传。
 
-如果导出诊断包后显示器关联问题仍然存在，最后再使用“清理显示缓存（最终修复）”。程序会先备份，再删除 Windows 的 \`GraphicsDrivers\\Configuration\`、\`Connectivity\` 和 \`ScaleFactors\` 缓存，然后立即重启 Windows 让系统重新生成。操作前请保存工作；此操作会重置所有显示器的显示配置。
+如果导出诊断包后显示器关联问题仍然存在，最后再使用“清理显示缓存（最终修复）”。用户确认后，程序会先写入完整备份和 Journal，只有备份成功才删除 Windows 的 `GraphicsDrivers\\Configuration`、`Connectivity` 和 `ScaleFactors` 缓存，然后立即重启 Windows 让系统重新生成。操作前请保存工作；此操作会重置所有显示器的显示配置。清理失败或部分失败时不会自动重启。
 
 ## 便携数据
 
@@ -84,6 +84,7 @@ WinSuperResolution 适用于以下场景：
 - `backup_journal/`
 - `display_state/`
 - `logs/`
+- `diagnostics/`
 
 整体移动程序目录即可保留便携配置。
 

@@ -122,6 +122,8 @@ namespace WinSuperResolution.Services
         private static void DeleteRegistryTree(RegistryOperationJournal journal, string registryPath)
         {
             RegistryJournalEntry entry = FindEntry(journal, registryPath);
+            if (entry != null && entry.RecoveryStatus == "MissingBeforeReset")
+                return;
             Registry.LocalMachine.DeleteSubKeyTree(registryPath, false);
             if (entry != null)
             {

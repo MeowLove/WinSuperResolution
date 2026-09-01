@@ -22,9 +22,10 @@ namespace WinSuperResolution.SmokeTests
                 TestIdleOperationLocalization();
                 TestPortablePaths();
                 TestActiveSignalTargetSelection();
-                TestUniqueTopologyPromotion();
+                TestResolutionOnlyMatchStaysCandidate();
                 TestDuplicateCandidateConfigurationProtection();
                 TestStableIdentityResolvesDuplicateCandidates();
+                TestNonUniqueStableIdentityStaysCandidate();
                 TestDiagnosticExportIncludesLongNamedBackup();
                 TestDisplayIdentityIncludesDeviceName();
                 TestLiveDisplayEnumeration();
@@ -121,7 +122,7 @@ namespace WinSuperResolution.SmokeTests
             Assert(selected.ActiveSignalWidth == 2880 && selected.ActiveSignalHeight == 1800, "The scan must use a valid ActiveSize from any target node.");
         }
 
-        private static void TestUniqueTopologyPromotion()
+        private static void TestResolutionOnlyMatchStaysCandidate()
         {
             DisplayConfigurationRecord record = CreateRecord(4320, 2700, 4320, 2700);
             record.MatchStatus = MatchStatus.Candidate;
@@ -131,10 +132,7 @@ namespace WinSuperResolution.SmokeTests
                 CurrentHeight = 2700,
                 IsAttachedToDesktop = true
             };
-            DisplayCatalogService.PromoteUniqueTopologyMatches(
-                new System.Collections.Generic.List<DisplayConfigurationRecord> { record },
-                new System.Collections.Generic.List<LiveDisplayInfo> { display });
-            Assert(record.MatchStatus == MatchStatus.Exact, "A one-to-one active topology match should promote a Candidate record to Exact.");
+            Assert(record.MatchStatus == MatchStatus.Candidate, "Resolution-only evidence must not promote a Candidate record to Exact.");
         }
 
         private static void TestDuplicateCandidateConfigurationProtection()
@@ -157,7 +155,7 @@ namespace WinSuperResolution.SmokeTests
             Assert(first.ConnectionStatus == ConnectionStatus.Active && second.ConnectionStatus == ConnectionStatus.Active, "Historical duplicate roots for one display must remain active candidates.");
             Assert(first.MatchStatus == MatchStatus.Candidate && second.MatchStatus == MatchStatus.Candidate, "Historical duplicate roots must retain Candidate matching status.");
             Assert(first.DuplicateCandidateCount == 2 && second.DuplicateCandidateCount == 2, "Duplicate Candidate records must retain the duplicate count for diagnostics.");
-            Assert(first.CanApplyVirtualCapability && second.CanApplyVirtualCapability, "Duplicate Candidate records must remain eligible for virtual-resolution capability writes.");
+            Assert(!first.CanApplyVirtualCapability && !second.CanApplyVirtualCapability, "Active duplicate Candidate records must remain read-only for virtual-resolution capability writes.");
         }
 
         private static void TestStableIdentityResolvesDuplicateCandidates()
@@ -190,6 +188,37 @@ namespace WinSuperResolution.SmokeTests
             Assert(exact.MatchStatus == MatchStatus.Exact && exact.CanManageCurrentState, "A unique stable monitor identity must promote the matching duplicate root to Exact.");
             Assert(stale.ConnectionStatus == ConnectionStatus.Historical && stale.MatchStatus == MatchStatus.Unmatched, "Superseded duplicate roots must be historical and unmatched.");
             Assert(!stale.CanApplyVirtualCapability, "Superseded duplicate roots must not receive capability writes.");
+        }
+
+        private static void TestNonUniqueStableIdentityStaysCandidate()
+        {
+            LiveDisplayInfo display = new LiveDisplayInfo
+            {
+                DeviceName = @"\\.\DISPLAY1",
+                MonitorDeviceId = @"MONITOR\TMA2004\4&11FF7B6D&0&UID8388688",
+                CurrentWidth = 2880,
+                CurrentHeight = 1800,
+                IsAttachedToDesktop = true
+            };
+            DisplayConfigurationRecord first = CreateRecord(5760, 3600, 2880, 1800);
+            first.ConfigurationKey = "TMA2004_A^FIRST";
+            first.ConnectionStatus = ConnectionStatus.Active;
+            first.MatchStatus = MatchStatus.Candidate;
+            first.ValidationStatus = ValidationStatus.Ready;
+            first.LiveDisplay = display;
+            DisplayConfigurationRecord second = CreateRecord(5760, 3600, 2880, 1800);
+            second.ConfigurationKey = "TMA2004_B^SECOND";
+            second.ConnectionStatus = ConnectionStatus.Active;
+            second.MatchStatus = MatchStatus.Candidate;
+            second.ValidationStatus = ValidationStatus.Ready;
+            second.LiveDisplay = display;
+
+            DisplayCatalogService.PromoteStableIdentityMatches(
+                new System.Collections.Generic.List<DisplayConfigurationRecord> { first, second },
+                new System.Collections.Generic.List<LiveDisplayInfo> { display });
+
+            Assert(first.MatchStatus == MatchStatus.Candidate && second.MatchStatus == MatchStatus.Candidate, "A non-unique model token must not promote any duplicate root to Exact.");
+            Assert(!first.CanApplyVirtualCapability && !second.CanApplyVirtualCapability, "Active non-unique candidates must remain read-only.");
         }
 
         private static void TestDiagnosticExportIncludesLongNamedBackup()
