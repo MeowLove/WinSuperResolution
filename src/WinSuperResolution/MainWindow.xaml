@@ -47,6 +47,10 @@
             <Setter Property="Background" Value="#24525A" />
             <Setter Property="Foreground" Value="#F7FCFC" />
         </Style>
+        <Style x:Key="DangerHeaderButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#8F3F46" />
+            <Setter Property="Foreground" Value="#FFF8F8" />
+        </Style>
         <Style TargetType="ComboBox">
             <Setter Property="MinHeight" Value="34" />
             <Setter Property="Padding" Value="8,3" />
@@ -139,6 +143,7 @@
                         <Button Content="{Binding Ui[Refresh]}" Style="{StaticResource HeaderButton}" Click="RefreshButton_Click" />
                         <Button Content="{Binding Ui[DisplaySettings]}" Style="{StaticResource HeaderButton}" Click="DisplaySettingsButton_Click" />
                         <Button Content="{Binding Ui[ExportDiagnostic]}" Style="{StaticResource HeaderButton}" Click="ExportDiagnosticButton_Click" />
+                        <Button Content="{Binding Ui[ResetDisplayCache]}" Style="{StaticResource DangerHeaderButton}" Click="ResetDisplayCacheButton_Click" />
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Grid.Column="1" VerticalAlignment="Top" Width="150">

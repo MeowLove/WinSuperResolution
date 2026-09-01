@@ -27,6 +27,7 @@ namespace WinSuperResolution.Services
         internal static string DisplayStateDirectory { get { return Path.Combine(DataRoot, "display_state"); } }
         internal static string LogsDirectory { get { return Path.Combine(DataRoot, "logs"); } }
         internal static string LatestCapabilityJournalPath { get { return Path.Combine(JournalsDirectory, "latest-capability-journal.json"); } }
+        internal static string LatestDisplayCacheResetJournalPath { get { return Path.Combine(JournalsDirectory, "latest-display-cache-reset.json"); } }
         internal static string LatestDisplayModeSnapshotPath { get { return Path.Combine(DisplayStateDirectory, "pending-display-mode.json"); } }
         internal static string LatestScaleJournalPath { get { return Path.Combine(JournalsDirectory, "latest-scale-journal.json"); } }
 

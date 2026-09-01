@@ -157,6 +157,35 @@ namespace WinSuperResolution
                 result.Succeeded ? MessageBoxImage.Information : MessageBoxImage.Warning);
         }
 
+        private void ResetDisplayCacheButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show(_viewModel.Ui["ResetDisplayCachePrompt"], _viewModel.Ui["ResetDisplayCache"], MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                return;
+
+            OperationResult result = _viewModel.ResetDisplayCache();
+            if (!result.Succeeded)
+            {
+                MessageBox.Show(_viewModel.Ui["DisplayCacheResetFailed"] + Environment.NewLine + result.Message, _viewModel.Ui["Error"], MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            MessageBox.Show(_viewModel.Ui["DisplayCacheResetSuccess"] + Environment.NewLine + Environment.NewLine + result.BackupPath, _viewModel.Ui["OperationResult"], MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "shutdown.exe",
+                    Arguments = "/r /t 0",
+                    CreateNoWindow = true,
+                    UseShellExecute = false
+                });
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(_viewModel.Ui["RestartFailed"] + Environment.NewLine + exception.Message, _viewModel.Ui["Error"], MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void OpenRecoveryFolderButton_Click(object sender, RoutedEventArgs e)
         {
             try

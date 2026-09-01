@@ -70,6 +70,7 @@
     <Compile Include="Services\AppPaths.cs" />
     <Compile Include="Services\DiagnosticsService.cs" />
     <Compile Include="Services\DiagnosticExportService.cs" />
+    <Compile Include="Services\DisplayCacheResetService.cs" />
     <Compile Include="Services\DisplayCatalogService.cs" />
     <Compile Include="Services\DisplayModeService.cs" />
     <Compile Include="Services\VirtualDesktopModeService.cs" />

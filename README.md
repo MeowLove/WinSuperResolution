@@ -74,6 +74,8 @@ Please include the WinSuperResolution version, Windows version/build, number of 
 
 Diagnostic packages may contain application logs, operation journals, registry exports, existing registry backups, display-state snapshots, application settings, monitor identifiers, and local file paths. Review the ZIP before uploading and redact or remove anything you do not want to share. The package is created locally and is not uploaded automatically by the application.
 
+If the display-association problem persists after exporting a diagnostic package, use **Reset display cache (final repair)** only as a last resort. The application backs up and deletes the Windows \`GraphicsDrivers\\Configuration\`, \`Connectivity\`, and \`ScaleFactors\` caches, then immediately restarts Windows so it can rebuild them. Save your work first; this resets display configuration for all monitors.
+
 ## Portable Data
 
 The application stores its settings and recovery data beside the executable:

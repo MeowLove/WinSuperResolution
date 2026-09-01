@@ -19,6 +19,7 @@ namespace WinSuperResolution.ViewModels
         private readonly ExperimentalScaleService _scaleService;
         private readonly PortableSettingsService _settingsService;
         private readonly DiagnosticExportService _diagnosticExportService;
+        private readonly DisplayCacheResetService _displayCacheResetService;
         private DisplayConfigurationRecord _selectedRecord;
         private DisplayMode _selectedMode;
         private int _selectedScalePercent;
@@ -43,6 +44,7 @@ namespace WinSuperResolution.ViewModels
             _scaleService = new ExperimentalScaleService(journals, _diagnostics);
             _settingsService = new PortableSettingsService();
             _diagnosticExportService = new DiagnosticExportService();
+            _displayCacheResetService = new DisplayCacheResetService(journals, _diagnostics);
             Records = new ObservableCollection<DisplayConfigurationRecord>();
             CurrentModes = new ObservableCollection<DisplayMode>();
             AvailableScalePercentages = new ObservableCollection<int>();
@@ -416,6 +418,13 @@ namespace WinSuperResolution.ViewModels
                 StatusText = Ui["DiagnosticExportFailed"];
                 LastOperationSummary = StatusText;
             }
+            return result;
+        }
+
+        public OperationResult ResetDisplayCache()
+        {
+            OperationResult result = _displayCacheResetService.Reset();
+            RecordOperation(result);
             return result;
         }
 
