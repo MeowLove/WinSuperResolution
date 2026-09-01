@@ -41,6 +41,7 @@ namespace WinSuperResolution.Models
         public string ScanWarning { get; set; }
         public LiveDisplayInfo LiveDisplay { get; set; }
         public string CorrelationEvidence { get; set; }
+        public int DuplicateCandidateCount { get; set; }
         public string ConnectionStatusText { get; set; }
         public string MatchStatusText { get; set; }
         public string PrimarySurfaceDisplayText { get; set; }
@@ -69,6 +70,11 @@ namespace WinSuperResolution.Models
         public bool CanManageCurrentState
         {
             get { return ConnectionStatus == ConnectionStatus.Active && MatchStatus == MatchStatus.Exact && LiveDisplay != null; }
+        }
+
+        public bool CanApplyVirtualCapability
+        {
+            get { return (ValidationStatus == ValidationStatus.Ready || ValidationStatus == ValidationStatus.Warning) && ConnectionStatus != ConnectionStatus.Conflicted; }
         }
 
         public string DisplayIdentity

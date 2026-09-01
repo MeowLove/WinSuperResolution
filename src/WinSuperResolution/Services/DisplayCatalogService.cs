@@ -43,9 +43,10 @@ namespace WinSuperResolution.Services
             }
 
             PromoteUniqueTopologyMatches(records, liveDisplays);
+            MarkDuplicateCandidateConfigurations(records);
 
             foreach (DisplayConfigurationRecord record in records)
-                _diagnostics.Write("Display record " + record.ConfigurationKey + ": targets=" + record.RegistryTargets.Count + ", primary=" + record.PrimarySurfaceText + ", activeSignal=" + record.ActiveSignalText + ", connection=" + record.ConnectionStatus + ", match=" + record.MatchStatus);
+                _diagnostics.Write("Display record " + record.ConfigurationKey + ": targets=" + record.RegistryTargets.Count + ", primary=" + record.PrimarySurfaceText + ", activeSignal=" + record.ActiveSignalText + ", connection=" + record.ConnectionStatus + ", match=" + record.MatchStatus + ", duplicateCandidates=" + record.DuplicateCandidateCount);
             _diagnostics.Write("Scanned " + records.Count + " registered display configuration root(s) and " + liveDisplays.Count + " active Windows display(s).");
             return records;
         }
@@ -137,6 +138,38 @@ namespace WinSuperResolution.Services
                 unique.MatchStatus = MatchStatus.Exact;
                 unique.CorrelationEvidence = "Unique active topology and current-mode resolution evidence matched; the registry key has no stable monitor token.";
                 unique.ScanWarning = string.Empty;
+            }
+        }
+
+        internal static void MarkDuplicateCandidateConfigurations(IList<DisplayConfigurationRecord> records)
+        {
+            Dictionary<string, List<DisplayConfigurationRecord>> candidatesByDevice = new Dictionary<string, List<DisplayConfigurationRecord>>(StringComparer.OrdinalIgnoreCase);
+            foreach (DisplayConfigurationRecord record in records)
+            {
+                if (record == null || record.ConnectionStatus != ConnectionStatus.Active || record.MatchStatus != MatchStatus.Candidate || record.LiveDisplay == null || string.IsNullOrEmpty(record.LiveDisplay.DeviceName))
+                    continue;
+
+                List<DisplayConfigurationRecord> candidates;
+                if (!candidatesByDevice.TryGetValue(record.LiveDisplay.DeviceName, out candidates))
+                {
+                    candidates = new List<DisplayConfigurationRecord>();
+                    candidatesByDevice.Add(record.LiveDisplay.DeviceName, candidates);
+                }
+                candidates.Add(record);
+            }
+
+            foreach (KeyValuePair<string, List<DisplayConfigurationRecord>> pair in candidatesByDevice)
+            {
+                if (pair.Value.Count < 2)
+                    continue;
+
+                foreach (DisplayConfigurationRecord record in pair.Value)
+                {
+                    record.ConnectionStatus = ConnectionStatus.Conflicted;
+                    record.DuplicateCandidateCount = pair.Value.Count;
+                    record.CorrelationEvidence = "Multiple registered configuration roots match the same active Windows display by resolution only.";
+                    record.ScanWarning = "Duplicate candidate configuration. Virtual-resolution capability changes are disabled until the current registry configuration can be identified.";
+                }
             }
         }
 

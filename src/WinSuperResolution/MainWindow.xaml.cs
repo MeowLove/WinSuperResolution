@@ -147,10 +147,14 @@ namespace WinSuperResolution
             }
         }
 
-        private void CopyDiagnosticButton_Click(object sender, RoutedEventArgs e)
+        private void ExportDiagnosticButton_Click(object sender, RoutedEventArgs e)
         {
-            Clipboard.SetText(_viewModel.BuildDiagnosticSummary());
-            _viewModel.StatusText = _viewModel.Ui["DiagnosticCopied"];
+            DiagnosticExportResult result = _viewModel.ExportDiagnosticPackage();
+            string message = result.Succeeded
+                ? _viewModel.Ui["DiagnosticExported"] + Environment.NewLine + result.ArchivePath
+                : _viewModel.Ui["DiagnosticExportFailed"];
+            MessageBox.Show(message, _viewModel.Ui["OperationResult"], MessageBoxButton.OK,
+                result.Succeeded ? MessageBoxImage.Information : MessageBoxImage.Warning);
         }
 
         private void OpenRecoveryFolderButton_Click(object sender, RoutedEventArgs e)

@@ -5,7 +5,8 @@ namespace WinSuperResolution.Models
         Unknown,
         Historical,
         Inactive,
-        Active
+        Active,
+        Conflicted
     }
 
     public enum MatchStatus

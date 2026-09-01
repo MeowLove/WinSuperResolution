@@ -22,6 +22,7 @@ namespace WinSuperResolution.SmokeTests
                 TestPortablePaths();
                 TestActiveSignalTargetSelection();
                 TestUniqueTopologyPromotion();
+                TestDuplicateCandidateConfigurationProtection();
                 TestDisplayIdentityIncludesDeviceName();
                 TestLiveDisplayEnumeration();
                 TestExperimentalScaleSafetyGate();
@@ -128,6 +129,26 @@ namespace WinSuperResolution.SmokeTests
                 new System.Collections.Generic.List<DisplayConfigurationRecord> { record },
                 new System.Collections.Generic.List<LiveDisplayInfo> { display });
             Assert(record.MatchStatus == MatchStatus.Exact, "A one-to-one active topology match should promote a Candidate record to Exact.");
+        }
+
+        private static void TestDuplicateCandidateConfigurationProtection()
+        {
+            LiveDisplayInfo display = new LiveDisplayInfo { DeviceName = @"\\.\DISPLAY1" };
+            DisplayConfigurationRecord first = CreateRecord(3840, 2160, 3840, 2160);
+            first.ConnectionStatus = ConnectionStatus.Active;
+            first.MatchStatus = MatchStatus.Candidate;
+            first.LiveDisplay = display;
+            DisplayConfigurationRecord second = CreateRecord(3840, 2160, 3840, 2160);
+            second.ConnectionStatus = ConnectionStatus.Active;
+            second.MatchStatus = MatchStatus.Candidate;
+            second.LiveDisplay = display;
+
+            DisplayCatalogService.MarkDuplicateCandidateConfigurations(
+                new System.Collections.Generic.List<DisplayConfigurationRecord> { first, second });
+
+            Assert(first.ConnectionStatus == ConnectionStatus.Conflicted && second.ConnectionStatus == ConnectionStatus.Conflicted, "Duplicate Candidate records must not be reported as active displays.");
+            Assert(first.DuplicateCandidateCount == 2 && second.DuplicateCandidateCount == 2, "Duplicate Candidate records must retain the conflict count for diagnostics.");
+            Assert(!first.CanApplyVirtualCapability && !second.CanApplyVirtualCapability, "Duplicate Candidate records must not permit virtual-resolution capability writes.");
         }
 
         private static void TestDisplayIdentityIncludesDeviceName()

@@ -12,6 +12,11 @@ namespace WinSuperResolution.Services
                 throw new InvalidOperationException("Select a display configuration first.");
             }
 
+            if (!record.CanApplyVirtualCapability)
+            {
+                throw new InvalidOperationException("Virtual-resolution capability changes are disabled because multiple registry configurations match the same active Windows display.");
+            }
+
             if (magnification < 100 || magnification > 350 || magnification % 10 != 0)
             {
                 throw new InvalidOperationException("Magnification must be between 100% and 350% in 10% increments.");

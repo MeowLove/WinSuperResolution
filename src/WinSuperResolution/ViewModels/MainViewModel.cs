@@ -18,6 +18,7 @@ namespace WinSuperResolution.ViewModels
         private readonly DisplayModeService _displayModeService;
         private readonly ExperimentalScaleService _scaleService;
         private readonly PortableSettingsService _settingsService;
+        private readonly DiagnosticExportService _diagnosticExportService;
         private DisplayConfigurationRecord _selectedRecord;
         private DisplayMode _selectedMode;
         private int _selectedScalePercent;
@@ -41,6 +42,7 @@ namespace WinSuperResolution.ViewModels
             _displayModeService = new DisplayModeService(journals);
             _scaleService = new ExperimentalScaleService(journals, _diagnostics);
             _settingsService = new PortableSettingsService();
+            _diagnosticExportService = new DiagnosticExportService();
             Records = new ObservableCollection<DisplayConfigurationRecord>();
             CurrentModes = new ObservableCollection<DisplayMode>();
             AvailableScalePercentages = new ObservableCollection<int>();
@@ -76,6 +78,7 @@ namespace WinSuperResolution.ViewModels
                 OnPropertyChanged("SelectedRecord");
                 OnPropertyChanged("SelectedSummary");
                 OnPropertyChanged("CanManageCurrentState");
+                OnPropertyChanged("CanApplySelectedCapability");
                 OnPropertyChanged("CurrentStateSummary");
             }
         }
@@ -170,6 +173,24 @@ namespace WinSuperResolution.ViewModels
             get { return AvailableScalePercentages.Count > 0 && SelectedScalePercent > 0; }
         }
 
+        public bool CanApplySelectedCapability
+        {
+            get { return SelectedRecord != null && SelectedRecord.CanApplyVirtualCapability; }
+        }
+
+        public bool CanApplyAllCapabilities
+        {
+            get
+            {
+                foreach (DisplayConfigurationRecord record in Records)
+                {
+                    if (record.CanApplyVirtualCapability)
+                        return true;
+                }
+                return false;
+            }
+        }
+
         public string ScaleAvailability
         {
             get { return _scaleAvailability; }
@@ -234,6 +255,7 @@ namespace WinSuperResolution.ViewModels
                 SelectedRecord = Records.Count > 0 ? Records[0] : null;
                 PlanSummary = Ui["NoPlan"];
                 StatusText = string.Format(Ui["ScanComplete"], Records.Count, CountTargets());
+                OnPropertyChanged("CanApplyAllCapabilities");
             }
             catch (Exception exception)
             {
@@ -283,7 +305,7 @@ namespace WinSuperResolution.ViewModels
                 List<ResolutionPlan> plans = new List<ResolutionPlan>();
                 foreach (DisplayConfigurationRecord record in Records)
                 {
-                    if (record.ValidationStatus == ValidationStatus.Ready || record.ValidationStatus == ValidationStatus.Warning)
+                    if (record.CanApplyVirtualCapability)
                         plans.Add(_planService.Build(record, SelectedMagnification));
                 }
                 OperationResult result = _capabilityService.ApplyBatch(plans);
@@ -301,7 +323,7 @@ namespace WinSuperResolution.ViewModels
             List<ResolutionPlan> plans = new List<ResolutionPlan>();
             foreach (DisplayConfigurationRecord record in Records)
             {
-                if (record.ValidationStatus == ValidationStatus.Ready || record.ValidationStatus == ValidationStatus.Warning)
+                if (record.CanApplyVirtualCapability)
                     plans.Add(_planService.Build(record, SelectedMagnification));
             }
             return plans;
@@ -359,12 +381,42 @@ namespace WinSuperResolution.ViewModels
         public string BuildDiagnosticSummary()
         {
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine("WinSuperResolution v2 diagnostic");
+            builder.AppendLine("WinSuperResolution v2.2 diagnostic");
             builder.AppendLine("Registered configuration roots: " + Records.Count);
             builder.AppendLine("Writable targets: " + CountTargets());
             foreach (DisplayConfigurationRecord record in Records)
-                builder.AppendLine(record.ConfigurationKey + " | " + record.PrimarySurfaceText + " | " + record.ActiveSignalText + " | " + record.ValidationStatus + " | " + record.MatchStatus);
+            {
+                builder.AppendLine("Configuration: " + record.ConfigurationKey + " | primary=" + record.PrimarySurfaceText + " | signal=" + record.ActiveSignalText + " | validation=" + record.ValidationStatus + " | connection=" + record.ConnectionStatus + " | match=" + record.MatchStatus + " | duplicateCandidates=" + record.DuplicateCandidateCount);
+                if (record.LiveDisplay != null)
+                {
+                    LiveDisplayInfo display = record.LiveDisplay;
+                    builder.AppendLine("  LiveDisplay: device=" + display.DeviceName + " | monitorId=" + display.MonitorDeviceId + " | monitorKey=" + display.MonitorDeviceKey + " | devicePath=" + display.MonitorDevicePath + " | edid=" + display.EdidManufacturer + ":" + display.EdidProductCode + " | connection=" + display.ConnectionTechnology + " | mode=" + display.CurrentModeText + " | scale=" + display.ScaleText);
+                }
+                foreach (RegistryTarget target in record.RegistryTargets)
+                    builder.AppendLine("  Target: " + target.RelativePath + " | primary=" + target.PrimarySurfaceWidth + "x" + target.PrimarySurfaceHeight + " | active=" + target.ActiveSignalWidth + "x" + target.ActiveSignalHeight);
+                if (!string.IsNullOrEmpty(record.CorrelationEvidence))
+                    builder.AppendLine("  Correlation: " + record.CorrelationEvidence);
+                if (!string.IsNullOrEmpty(record.ScanWarning))
+                    builder.AppendLine("  Warning: " + record.ScanWarning);
+            }
             return builder.ToString();
+        }
+
+        internal DiagnosticExportResult ExportDiagnosticPackage()
+        {
+            DiagnosticExportResult result = _diagnosticExportService.Export(BuildDiagnosticSummary());
+            _hasOperationInSession = true;
+            if (result.Succeeded)
+            {
+                StatusText = Ui["DiagnosticExported"] + result.ArchivePath;
+                LastOperationSummary = StatusText;
+            }
+            else
+            {
+                StatusText = Ui["DiagnosticExportFailed"];
+                LastOperationSummary = StatusText;
+            }
+            return result;
         }
 
         private ResolutionPlan BuildSelectedPlan()
@@ -408,6 +460,8 @@ namespace WinSuperResolution.ViewModels
         {
             if (SelectedRecord == null)
                 return Ui["ModeNoSelection"];
+            if (SelectedRecord.ConnectionStatus == ConnectionStatus.Conflicted)
+                return Ui["ModeRequiresConflict"];
             if (SelectedRecord.ConnectionStatus != ConnectionStatus.Active)
                 return Ui["ModeRequiresActive"];
             if (SelectedRecord.MatchStatus != MatchStatus.Exact)
@@ -466,6 +520,7 @@ namespace WinSuperResolution.ViewModels
                 case ConnectionStatus.Active: return Ui["ConnectionActive"];
                 case ConnectionStatus.Historical: return Ui["ConnectionHistorical"];
                 case ConnectionStatus.Inactive: return Ui["ConnectionInactive"];
+                case ConnectionStatus.Conflicted: return Ui["ConnectionConflicted"];
                 default: return Ui["ConnectionUnknown"];
             }
         }
@@ -488,6 +543,7 @@ namespace WinSuperResolution.ViewModels
             if (evidence == "Current-mode resolution matches, but the registry key lacks a unique monitor instance token.") return Ui["EvidenceCandidate"];
             if (evidence == "No active Windows display has compatible resolution evidence.") return Ui["EvidenceUnmatched"];
             if (evidence == "Multiple active displays match only resolution evidence.") return Ui["EvidenceAmbiguous"];
+            if (evidence == "Multiple registered configuration roots match the same active Windows display by resolution only.") return Ui["EvidenceDuplicate"];
             return evidence;
         }
 
@@ -496,6 +552,7 @@ namespace WinSuperResolution.ViewModels
             if (warning == "Candidate live association only. Current mode and experimental scaling controls stay disabled until an Exact match is proven.") return Ui["WarningCandidate"];
             if (warning == "Historical or uncorrelated registry configuration. It remains eligible for virtual-capability planning, but current mode and scale controls are disabled.") return Ui["WarningUnmatched"];
             if (warning == "Ambiguous live association. The record is not treated as the current display.") return Ui["WarningAmbiguous"];
+            if (warning == "Duplicate candidate configuration. Virtual-resolution capability changes are disabled until the current registry configuration can be identified.") return Ui["WarningDuplicate"];
             if (warning == "No writable PrimSurfSize target was found.") return Ui["WarningNoTarget"];
             return warning;
         }

@@ -138,7 +138,7 @@
                     <StackPanel Orientation="Horizontal">
                         <Button Content="{Binding Ui[Refresh]}" Style="{StaticResource HeaderButton}" Click="RefreshButton_Click" />
                         <Button Content="{Binding Ui[DisplaySettings]}" Style="{StaticResource HeaderButton}" Click="DisplaySettingsButton_Click" />
-                        <Button Content="{Binding Ui[CopyDiagnostic]}" Style="{StaticResource HeaderButton}" Click="CopyDiagnosticButton_Click" />
+                        <Button Content="{Binding Ui[ExportDiagnostic]}" Style="{StaticResource HeaderButton}" Click="ExportDiagnosticButton_Click" />
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Grid.Column="1" VerticalAlignment="Top" Width="150">
@@ -225,8 +225,8 @@
                             </DockPanel>
                             <TextBlock Text="{Binding CurrentModeAvailability}" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,6,0,0" />
                             <WrapPanel Margin="0,14,0,0">
-                                <Button Content="{Binding Ui[ApplySelected]}" Click="ApplySelectedButton_Click" />
-                                <Button Content="{Binding Ui[ApplyAll]}" Style="{StaticResource QuietButton}" Click="ApplyAllButton_Click" />
+                                <Button Content="{Binding Ui[ApplySelected]}" Click="ApplySelectedButton_Click" IsEnabled="{Binding CanApplySelectedCapability}" />
+                                <Button Content="{Binding Ui[ApplyAll]}" Style="{StaticResource QuietButton}" Click="ApplyAllButton_Click" IsEnabled="{Binding CanApplyAllCapabilities}" />
                                 <Button Content="{Binding Ui[RestoreLatest]}" Style="{StaticResource QuietButton}" Click="RestoreLatestButton_Click" />
                             </WrapPanel>
                             <Border Background="#F1F7F8" BorderBrush="#BFD9DE" BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,14,0,0">
