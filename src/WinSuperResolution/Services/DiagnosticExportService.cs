@@ -19,7 +19,8 @@ namespace WinSuperResolution.Services
             List<string> failures = new List<string>();
             string diagnosticsDirectory = Path.Combine(AppPaths.ExecutableDirectory, "diagnostics");
             string stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss-fff");
-            string stagingDirectory = Path.Combine(diagnosticsDirectory, "staging-" + stamp + "-" + Guid.NewGuid().ToString("N"));
+            // Keep the temporary path short because registry backup names can include long monitor identifiers.
+            string stagingDirectory = Path.Combine(Path.GetTempPath(), "WSRDiag", stamp + "-" + Guid.NewGuid().ToString("N"));
             string archivePath = Path.Combine(diagnosticsDirectory, "WinSuperResolution-diagnostic-" + stamp + ".zip");
 
             try

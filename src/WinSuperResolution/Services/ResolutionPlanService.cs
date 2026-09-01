@@ -12,7 +12,7 @@ namespace WinSuperResolution.Services
                 throw new InvalidOperationException("Select a display configuration first.");
             }
 
-            if (!record.CanApplyVirtualCapability)
+            if (record.ConnectionStatus == ConnectionStatus.Conflicted)
             {
                 throw new InvalidOperationException("Virtual-resolution capability changes are disabled because multiple registry configurations match the same active Windows display.");
             }

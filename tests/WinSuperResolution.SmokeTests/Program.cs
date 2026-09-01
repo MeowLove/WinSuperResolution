@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.IO.Compression;
 using WinSuperResolution.Models;
 using WinSuperResolution.Resources;
 using WinSuperResolution.Services;
@@ -23,6 +24,7 @@ namespace WinSuperResolution.SmokeTests
                 TestActiveSignalTargetSelection();
                 TestUniqueTopologyPromotion();
                 TestDuplicateCandidateConfigurationProtection();
+                TestDiagnosticExportIncludesLongNamedBackup();
                 TestDisplayIdentityIncludesDeviceName();
                 TestLiveDisplayEnumeration();
                 TestExperimentalScaleSafetyGate();
@@ -149,6 +151,40 @@ namespace WinSuperResolution.SmokeTests
             Assert(first.ConnectionStatus == ConnectionStatus.Conflicted && second.ConnectionStatus == ConnectionStatus.Conflicted, "Duplicate Candidate records must not be reported as active displays.");
             Assert(first.DuplicateCandidateCount == 2 && second.DuplicateCandidateCount == 2, "Duplicate Candidate records must retain the conflict count for diagnostics.");
             Assert(!first.CanApplyVirtualCapability && !second.CanApplyVirtualCapability, "Duplicate Candidate records must not permit virtual-resolution capability writes.");
+        }
+
+        private static void TestDiagnosticExportIncludesLongNamedBackup()
+        {
+            Directory.CreateDirectory(AppPaths.BackupsDirectory);
+            string fileName = new string('M', 90) + ".reg";
+            string backupPath = Path.Combine(AppPaths.BackupsDirectory, fileName);
+            File.WriteAllText(backupPath, "Windows Registry Editor Version 5.00");
+            DiagnosticExportResult result = null;
+            try
+            {
+                result = new DiagnosticExportService().Export("diagnostic export smoke test");
+                Assert(result.Succeeded, "Diagnostic export should produce an archive.");
+                using (ZipArchive archive = ZipFile.OpenRead(result.ArchivePath))
+                {
+                    bool found = false;
+                    foreach (ZipArchiveEntry entry in archive.Entries)
+                    {
+                        if (entry.FullName == "registry-backups/" + fileName)
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+                    Assert(found, "Diagnostic export must include long-named registry backup files.");
+                }
+            }
+            finally
+            {
+                if (File.Exists(backupPath))
+                    File.Delete(backupPath);
+                if (result != null && File.Exists(result.ArchivePath))
+                    File.Delete(result.ArchivePath);
+            }
         }
 
         private static void TestDisplayIdentityIncludesDeviceName()
