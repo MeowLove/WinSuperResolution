@@ -53,11 +53,18 @@ This tool changes Windows display configuration. It is not an AI image upscaler 
 2. Run it and approve the administrator prompt.
 3. Select a display configuration from the list.
 4. Choose a magnification and generate a preview plan.
-5. Review the targets and confirm the operation.
-6. For desktop resolution, select a mode and use **Test & apply desktop mode**. Keep the new mode during the confirmation countdown; otherwise it is restored automatically.
-7. For experimental scaling, select a percentage and apply it. Sign out or restart Windows if prompted.
+5. Review the targets, then use **Apply selected capability** or **Apply all capabilities** as appropriate.
+6. Restart Windows or reinitialize the display stack if prompted. In Windows **Display Settings**, choose the intended available desktop resolution.
+7. For desktop resolution, select a mode and use **Test & apply desktop mode**. Keep the new mode during the confirmation countdown; otherwise it is restored automatically.
+8. For experimental scaling, select a percentage and apply it. Sign out or restart Windows if prompted.
 
 The **Display Settings** button remains available for manual Windows configuration.
+
+## Image Quality and Compatibility
+
+Virtual-resolution capability expands the desktop modes that Windows and the graphics driver may offer. It does not add physical panel pixels, provide GPU rendering supersampling, or guarantee a particular mode or visual result on every device, driver, or application.
+
+On a low-resolution display, start at 110% and test in 10% increments. After each change, choose an available Windows desktop mode and a Windows display scale that remains comfortable to read. Higher magnification can provide more workspace, but it can also make text and UI smaller and expose the limits of the physical panel. There is no universally correct maximum: stop at the first acceptable balance between workspace, clarity, and comfort.
 
 ## Troubleshooting and GitHub Issues
 
