@@ -144,6 +144,7 @@
                         <Button Content="{Binding Ui[DisplaySettings]}" Style="{StaticResource HeaderButton}" Click="DisplaySettingsButton_Click" />
                         <Button Content="{Binding Ui[ExportDiagnostic]}" Style="{StaticResource HeaderButton}" Click="ExportDiagnosticButton_Click" />
                         <Button Content="{Binding Ui[ResetDisplayCache]}" Style="{StaticResource DangerHeaderButton}" Click="ResetDisplayCacheButton_Click" />
+                        <Button Content="{Binding Ui[AboutAuthor]}" Style="{StaticResource HeaderButton}" Click="AboutAuthorButton_Click" />
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Grid.Column="1" VerticalAlignment="Top" Width="150">

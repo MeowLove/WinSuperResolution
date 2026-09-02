@@ -12,6 +12,7 @@ namespace WinSuperResolution
 {
     public partial class MainWindow : Window
     {
+        private const string AuthorBlogUrl = "https://www.cxthhhhh.com/2026/08/31/winsuperresolution-windows-hidpi-style-scaling-v2.html";
         private readonly MainViewModel _viewModel;
 
         public MainWindow()
@@ -144,6 +145,22 @@ namespace WinSuperResolution
             catch (Exception exception)
             {
                 MessageBox.Show(exception.Message, _viewModel.Ui["DisplaySettings"], MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void AboutAuthorButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = AuthorBlogUrl,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message, _viewModel.Ui["AboutAuthor"], MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

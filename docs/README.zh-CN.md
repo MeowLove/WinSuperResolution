@@ -6,6 +6,13 @@
 
 WinSuperResolution 用于配置更高的 Windows 虚拟桌面分辨率，并配合 Windows 显示缩放，在有限的物理分辨率下获得更大的工作空间和更好的可读性。
 
+## 关于作者
+
+WinSuperResolution 由 **CXT** 创作，别名 **MeowLove**。
+
+- 网站：[www.cxthhhhh.com](https://www.cxthhhhh.com/)
+- V2 版本发布与介绍：[WinSuperResolution：Windows HiDPI 风格缩放 V2](https://www.cxthhhhh.com/2026/08/31/winsuperresolution-windows-hidpi-style-scaling-v2.html)
+
 <img width="256" height="256" alt="WinSuperResolution_Logo" src="https://github.com/user-attachments/assets/33560a97-8cd2-40d8-ae23-6dce05fd663e" />
 
 ## 适用场景

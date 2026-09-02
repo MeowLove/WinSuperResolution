@@ -6,6 +6,13 @@ Higher Virtual Resolution & HiDPI-Style Scaling for Windows.
 
 WinSuperResolution helps Windows users configure a higher virtual desktop resolution and combine it with Windows display scaling for a clearer, more spacious desktop experience similar in spirit to HiDPI.
 
+## About
+
+WinSuperResolution is created by **CXT**, also known as **MeowLove**.
+
+- Website: [www.cxthhhhh.com](https://www.cxthhhhh.com/)
+- Version 2 release and introduction: [WinSuperResolution: Windows HiDPI-Style Scaling V2](https://www.cxthhhhh.com/2026/08/31/winsuperresolution-windows-hidpi-style-scaling-v2.html)
+
 <img width="256" height="256" alt="WinSuperResolution_Logo" src="https://github.com/user-attachments/assets/33560a97-8cd2-40d8-ae23-6dce05fd663e" />
 
 ## Use Cases

@@ -6,6 +6,13 @@
 
 WinSuperResolution помогает настроить повышенное виртуальное разрешение рабочего стола Windows и сочетать его с системным масштабированием, чтобы получить более чёткое и просторное рабочее пространство, близкое по ощущению к HiDPI.
 
+## Об авторе
+
+WinSuperResolution создан **CXT**, также известным как **MeowLove**.
+
+- Сайт: [www.cxthhhhh.com](https://www.cxthhhhh.com/)
+- Релиз и обзор версии 2: [WinSuperResolution: Windows HiDPI-Style Scaling V2](https://www.cxthhhhh.com/2026/08/31/winsuperresolution-windows-hidpi-style-scaling-v2.html)
+
 <img width="256" height="256" alt="WinSuperResolution_Logo" src="https://github.com/user-attachments/assets/33560a97-8cd2-40d8-ae23-6dce05fd663e" />
 
 ## Сценарии использования
