@@ -44,7 +44,7 @@ WinSuperResolution предназначен для следующих сцена
 
 Инструмент изменяет конфигурацию дисплея Windows. Это не ИИ-апскейлер изображений и он не предоставляет NVIDIA DLSS, AMD FSR, Intel XeSS или аналогичные функции рендеринга GPU.
 
-<img width="4320" height="2598" alt="Demo" src="https://github.com/user-attachments/assets/0b4a9972-723b-4125-aac2-e5680bcd9ad4" />
+<img width="3622" height="2395" alt="image" src="https://github.com/user-attachments/assets/9c5776b6-0102-416e-98a0-dd50def7b16a" />
 
 ## Требования
 
