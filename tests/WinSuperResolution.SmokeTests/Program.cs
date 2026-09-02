@@ -20,6 +20,7 @@ namespace WinSuperResolution.SmokeTests
                 TestInvalidMagnification();
                 TestEmbeddedLocalization();
                 TestIdleOperationLocalization();
+                TestLocalizedOperationSummary();
                 TestPortablePaths();
                 TestActiveSignalTargetSelection();
                 TestResolutionOnlyMatchStaysCandidate();
@@ -86,6 +87,9 @@ namespace WinSuperResolution.SmokeTests
             Assert(Strings.ForCulture("en-US")["ResetDisplayCachePrompt"].StartsWith("Final repair"), "English display-cache reset prompt is missing.");
             Assert(Strings.ForCulture("zh-CN")["ResetDisplayCachePrompt"].StartsWith("最终修复方案"), "Chinese display-cache reset prompt is missing.");
             Assert(Strings.ForCulture("ru-RU")["ResetDisplayCachePrompt"].StartsWith("Финальное исправление"), "Russian display-cache reset prompt is missing.");
+            Assert(Strings.ForCulture("en-US")["Compatibility"] == "Environment and compatibility", "English compatibility label is missing.");
+            Assert(Strings.ForCulture("zh-CN")["Compatibility"] == "环境与兼容性", "Chinese compatibility label is missing.");
+            Assert(Strings.ForCulture("ru-RU")["Compatibility"] == "Среда и совместимость", "Russian compatibility label is missing.");
             Assert(Strings.ForCulture("unknown")["ProductName"] == "WinSuperResolution", "Unsupported cultures must fall back to English.");
         }
 
@@ -105,6 +109,15 @@ namespace WinSuperResolution.SmokeTests
             {
                 viewModel.SelectedLanguage = originalLanguage;
             }
+        }
+
+        private static void TestLocalizedOperationSummary()
+        {
+            MainViewModel viewModel = new MainViewModel();
+            OperationResult result = viewModel.ApplyCurrentMode();
+            Assert(!result.Succeeded, "A current-mode operation without a selected record must fail.");
+            viewModel.SelectedLanguage = "zh-CN";
+            Assert(viewModel.LastOperationSummary.StartsWith(Strings.ForCulture("zh-CN")["OperationFailed"]), "Operation summary did not switch to Chinese.");
         }
 
         private static void TestPortablePaths()

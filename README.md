@@ -54,6 +54,8 @@ This tool changes Windows display configuration. It is not an AI image upscaler 
 - .NET Framework 4.8.1
 - Administrator permission
 
+The operating-system baseline alone does not guarantee virtual-resolution support. The active Windows display path and graphics driver decide whether virtual desktop modes are available. The in-app **Environment and compatibility** panel reports the detected Windows version, CPU, graphics adapters, driver versions and dates, and the selected display path status. Its red, yellow, and green states are advisory only: they never block an operation.
+
 ## Usage
 
 1. Download or build `WinSuperResolution.exe`.
@@ -70,6 +72,8 @@ The **Display Settings** button remains available for manual Windows configurati
 ## Image Quality and Compatibility
 
 Virtual-resolution capability expands the desktop modes that Windows and the graphics driver may offer. It does not add physical panel pixels, provide GPU rendering supersampling, or guarantee a particular mode or visual result on every device, driver, or application.
+
+A virtual-desktop path reported by Windows is the primary compatibility signal. Systems with an old graphics driver, an unsupported Windows 11 installation, or hardware outside Microsoft's current Windows 11 recommendations can still be inspected and tried, but mode availability and persistence after a restart are not guaranteed.
 
 On a low-resolution display, start at 110% and test in 10% increments. After each change, choose an available Windows desktop mode and a Windows display scale that remains comfortable to read. Higher magnification can provide more workspace, but it can also make text and UI smaller and expose the limits of the physical panel. There is no universally correct maximum: stop at the first acceptable balance between workspace, clarity, and comfort.
 
@@ -118,7 +122,7 @@ For a verified local release, run:
 
 ```powershell
 .\scripts\Build-Release.ps1
-.\scripts\Package-Release.ps1 -Version 2.3.0
+.\scripts\Package-Release.ps1 -Version 2.5.0
 ```
 
 The build script rebuilds `Release|x64` with .NET Framework MSBuild and runs the smoke tests. The package script creates `deliverables/WinSuperResolution-v<version>-win-x64.zip` and its SHA-256 file from the verified executable and public documentation. It does not upload a GitHub Release.

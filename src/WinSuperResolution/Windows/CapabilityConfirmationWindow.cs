@@ -8,7 +8,7 @@ namespace WinSuperResolution.Windows
 {
     internal sealed class CapabilityConfirmationWindow : Window
     {
-        internal CapabilityConfirmationWindow(string title, string prompt, IList<ResolutionPlan> plans, string applyText, string cancelText)
+        internal CapabilityConfirmationWindow(string title, string prompt, IList<ResolutionPlan> plans, string applyText, string cancelText, string planSummaryTemplate, string activeSignalBasis, string registeredSurfaceBasis, string recoveryPolicy)
         {
             Title = title;
             Width = 760;
@@ -24,7 +24,7 @@ namespace WinSuperResolution.Windows
 
             ListBox planList = new ListBox { Margin = new Thickness(0, 14, 0, 14) };
             foreach (ResolutionPlan plan in plans)
-                planList.Items.Add(DescribePlan(plan));
+                planList.Items.Add(DescribePlan(plan, planSummaryTemplate, activeSignalBasis, registeredSurfaceBasis, recoveryPolicy));
             Grid.SetRow(planList, 1);
             grid.Children.Add(planList);
 
@@ -40,12 +40,13 @@ namespace WinSuperResolution.Windows
             Content = grid;
         }
 
-        private static string DescribePlan(ResolutionPlan plan)
+        private static string DescribePlan(ResolutionPlan plan, string planSummaryTemplate, string activeSignalBasis, string registeredSurfaceBasis, string recoveryPolicy)
         {
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine(plan.Record.DisplayIdentity + " | " + plan.Record.ConnectionStatus + " / " + plan.Record.MatchStatus);
-            builder.AppendLine(plan.Summary);
-            builder.AppendLine("Failure policy: automatically attempt reverse-order journal recovery.");
+            builder.AppendLine(plan.Record.DisplayIdentity + " | " + plan.Record.ConnectionStatusText + " / " + plan.Record.MatchStatusText);
+            string basis = plan.Basis == CalculationBasis.ActiveSize ? activeSignalBasis : registeredSurfaceBasis;
+            builder.AppendLine(string.Format(planSummaryTemplate, plan.Magnification, basis, plan.BaseWidth, plan.BaseHeight, plan.TargetWidth, plan.TargetHeight, plan.Mutations.Count));
+            builder.AppendLine(recoveryPolicy);
             foreach (RegistryMutation mutation in plan.Mutations)
                 builder.AppendLine("HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\\Configuration\\" + mutation.RelativePath + " | " + mutation.OriginalWidth + " x " + mutation.OriginalHeight + " -> " + mutation.TargetWidth + " x " + mutation.TargetHeight);
             return builder.ToString();

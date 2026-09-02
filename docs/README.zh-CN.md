@@ -53,6 +53,8 @@ WinSuperResolution 适用于以下场景：
 - .NET Framework 4.8.1
 - 管理员权限
 
+仅满足系统版本下限并不能保证支持虚拟分辨率。实际是否可用取决于 Windows 当前活动显示路径和显卡驱动。程序中的“环境与兼容性”板块会显示检测到的 Windows 版本、CPU、显卡、驱动版本和日期，以及当前所选显示路径的状态。红色、黄色和绿色状态仅用于提示风险，不会屏蔽任何操作。
+
 ## 使用方法
 
 1. 下载或编译 `WinSuperResolution.exe`。
@@ -69,6 +71,8 @@ WinSuperResolution 适用于以下场景：
 ## 图像质量与兼容性
 
 虚拟分辨率能力扩展的是 Windows 和显卡驱动可能提供的桌面模式集合。它不会增加面板的物理像素，不提供 GPU 渲染超采样，也不能保证每台设备、每个驱动或每个应用都提供特定模式或得到特定画面效果。
+
+Windows 报告的虚拟桌面显示路径是主要兼容性信号。旧显卡驱动、非受 Microsoft 当前 Windows 11 推荐范围支持的安装或硬件仍可检查和尝试，但不能保证模式出现，也不能保证重启后保持。
 
 低分辨率显示器建议从 110% 开始，按 10% 增量测试。每次调整后，请选择可用的 Windows 桌面分辨率和阅读舒适的 Windows 显示缩放比例。更高倍率可能带来更多工作空间，但也可能使文字和界面变小，并暴露物理面板的限制。不存在通用的最大倍率；应在工作空间、清晰度和舒适度之间找到第一个可接受的平衡点。
 
@@ -117,7 +121,7 @@ WinSuperResolution 适用于以下场景：
 
 ```powershell
 .\scripts\Build-Release.ps1
-.\scripts\Package-Release.ps1 -Version 2.3.0
+.\scripts\Package-Release.ps1 -Version 2.5.0
 ```
 
 编译脚本会使用 .NET Framework MSBuild 重建 `Release|x64`，并运行 Smoke Tests。打包脚本会从已验证的 EXE 和公开文档生成 `deliverables/WinSuperResolution-v<version>-win-x64.zip` 及其 SHA-256 文件；它不会上传 GitHub Release。

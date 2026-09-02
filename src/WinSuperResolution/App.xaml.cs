@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Threading;
+using WinSuperResolution.Resources;
 using WinSuperResolution.Services;
 
 namespace WinSuperResolution
@@ -19,7 +20,9 @@ namespace WinSuperResolution
         private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             _diagnostics.Write("Unhandled WPF exception: " + e.Exception);
-            MessageBox.Show("An unexpected error was recorded in the portable logs folder. No additional changes will be applied.", "WinSuperResolution", MessageBoxButton.OK, MessageBoxImage.Error);
+            string culture = new PortableSettingsService().LoadLanguage();
+            LocalizedStrings ui = Strings.ForCulture(culture);
+            MessageBox.Show(ui["UnexpectedError"], ui["ProductName"], MessageBoxButton.OK, MessageBoxImage.Error);
             e.Handled = true;
         }
 

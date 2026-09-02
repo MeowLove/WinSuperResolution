@@ -23,13 +23,79 @@ namespace WinSuperResolution.Resources
         internal const string DefaultCulture = "en-US";
         internal static readonly IList<string> SupportedCultures = new List<string> { "en-US", "zh-CN", "ru-RU" };
 
-        private static readonly IDictionary<string, IDictionary<string, string>> Values =
-            new Dictionary<string, IDictionary<string, string>>
+        private static readonly IDictionary<string, IDictionary<string, string>> Values = CreateValues();
+
+        private static IDictionary<string, IDictionary<string, string>> CreateValues()
+        {
+            IDictionary<string, string> english = CreateEnglish();
+            AddCompatibilityStrings(english, "Environment and compatibility", "Unsupported", "Experimental", "Can try", "System", "Processor", "Graphics", "Display path", "View details", "Select an active display to inspect its virtual desktop path.", "Windows did not report virtual desktop support for this active display path.", "The active display path supports virtual desktop modes, but the graphics driver is old or its date is unavailable.", "The active display path reports virtual desktop support.");
+            english.Add("CompatibilityPathSupported", "Virtual desktop path: supported for {0}.");
+            english.Add("CompatibilityPathUnavailable", "Virtual desktop path: Windows could not confirm support for {0}.");
+            AddOperationStrings(english, "Virtual-resolution capability was written and verified. Restart Windows or the display driver before expecting new modes.", "Virtual-resolution capability was not applied. Check the diagnostic package for technical details.", "The latest virtual-resolution capability journal was restored.", "The latest virtual-resolution capability journal could not be restored. Check the diagnostic package for technical details.", "Desktop mode applied. Confirm it in the countdown window to retain it.", "Desktop mode was not applied. Check the diagnostic package for technical details.", "The new desktop mode was retained.", "The new desktop mode could not be retained.", "The original desktop mode was restored.", "The original desktop mode could not be restored.", "Experimental scale was not applied. Check the diagnostic package for technical details.", "Windows display cache reset was not completed. Check the diagnostic package for technical details.", "The operation was not completed. Check the diagnostic package for technical details.", "{0}% using {1}: {2} x {3} -> {4} x {5}; {6} registry target(s).", "active signal", "registered surface", "The capability preview could not be generated.", "Windows Display Settings could not be opened.", "The author page could not be opened.", "The recovery folder could not be opened.");
+            english.Add("CapabilityRecoveryPolicy", "Failure policy: automatically attempt reverse-order journal recovery.");
+            english.Add("UnexpectedError", "An unexpected error was recorded in the portable logs folder. No additional changes will be applied.");
+            IDictionary<string, string> chinese = CreateChinese();
+            AddCompatibilityStrings(chinese, "环境与兼容性", "不支持", "实验性", "可尝试", "系统", "处理器", "显卡", "显示路径", "查看详细依据", "请选择活动显示器以检查其虚拟桌面路径。", "Windows 未报告此活动显示路径支持虚拟桌面模式。", "活动显示路径支持虚拟桌面模式，但显卡驱动过旧或无法取得驱动日期。", "活动显示路径已报告支持虚拟桌面模式。");
+            chinese.Add("CompatibilityPathSupported", "虚拟桌面路径：{0} 已报告支持。");
+            chinese.Add("CompatibilityPathUnavailable", "虚拟桌面路径：Windows 无法确认 {0} 支持该功能。");
+            AddOperationStrings(chinese, "虚拟分辨率能力已写入并验证。请重启 Windows 或重新初始化显示驱动后再等待新模式出现。", "虚拟分辨率能力未应用。请检查诊断包中的技术详情。", "最近一次虚拟分辨率能力 Journal 已恢复。", "无法恢复最近一次虚拟分辨率能力 Journal。请检查诊断包中的技术详情。", "桌面分辨率已应用。请在倒计时窗口中确认保留。", "桌面分辨率未应用。请检查诊断包中的技术详情。", "新的桌面分辨率已保留。", "无法保留新的桌面分辨率。", "原始桌面分辨率已恢复。", "无法恢复原始桌面分辨率。", "实验性缩放未应用。请检查诊断包中的技术详情。", "Windows 显示缓存清理未完成。请检查诊断包中的技术详情。", "操作未完成。请检查诊断包中的技术详情。", "{0}% 使用{1}：{2} x {3} -> {4} x {5}；{6} 个注册表目标。", "活动信号", "已注册表面", "无法生成能力预览。", "无法打开 Windows 显示设置。", "无法打开作者页面。", "无法打开恢复目录。");
+            chinese.Add("CapabilityRecoveryPolicy", "失败策略：自动按相反顺序尝试 Journal 恢复。");
+            chinese.Add("UnexpectedError", "发生意外错误，已记录到便携日志目录。不会继续执行其他修改。" );
+            IDictionary<string, string> russian = CreateRussian();
+            AddCompatibilityStrings(russian, "Среда и совместимость", "Не поддерживается", "Экспериментально", "Можно попробовать", "Система", "Процессор", "Графика", "Путь дисплея", "Показать подробности", "Выберите активный дисплей для проверки его пути виртуального рабочего стола.", "Windows не сообщает о поддержке виртуального рабочего стола для этого активного пути дисплея.", "Активный путь дисплея поддерживает виртуальный рабочий стол, но графический драйвер устарел или его дата недоступна.", "Активный путь дисплея сообщает о поддержке виртуального рабочего стола.");
+            russian.Add("CompatibilityPathSupported", "Путь виртуального рабочего стола: поддерживается для {0}.");
+            russian.Add("CompatibilityPathUnavailable", "Путь виртуального рабочего стола: Windows не может подтвердить поддержку для {0}.");
+            AddOperationStrings(russian, "Возможность виртуального разрешения записана и проверена. Перезапустите Windows или драйвер дисплея, прежде чем ожидать новые режимы.", "Возможность виртуального разрешения не применена. Проверьте технические сведения в пакете диагностики.", "Последний журнал возможности виртуального разрешения восстановлен.", "Не удалось восстановить последний журнал возможности виртуального разрешения. Проверьте технические сведения в пакете диагностики.", "Режим рабочего стола применён. Подтвердите его в окне обратного отсчёта, чтобы сохранить.", "Режим рабочего стола не применён. Проверьте технические сведения в пакете диагностики.", "Новый режим рабочего стола сохранён.", "Не удалось сохранить новый режим рабочего стола.", "Исходный режим рабочего стола восстановлен.", "Не удалось восстановить исходный режим рабочего стола.", "Экспериментальный масштаб не применён. Проверьте технические сведения в пакете диагностики.", "Сброс кэша дисплея Windows не завершён. Проверьте технические сведения в пакете диагностики.", "Операция не завершена. Проверьте технические сведения в пакете диагностики.", "{0}% с использованием {1}: {2} x {3} -> {4} x {5}; целей реестра: {6}.", "активный сигнал", "зарегистрированная поверхность", "Не удалось создать предварительный просмотр возможности.", "Не удалось открыть параметры дисплея Windows.", "Не удалось открыть страницу автора.", "Не удалось открыть папку восстановления.");
+            russian.Add("CapabilityRecoveryPolicy", "Политика при ошибке: автоматически попытаться восстановить журнал в обратном порядке.");
+            russian.Add("UnexpectedError", "Непредвиденная ошибка записана в папку переносимых журналов. Дополнительные изменения выполняться не будут.");
+            return new Dictionary<string, IDictionary<string, string>>
             {
-                { "en-US", CreateEnglish() },
-                { "zh-CN", CreateChinese() },
-                { "ru-RU", CreateRussian() }
+                { "en-US", english },
+                { "zh-CN", chinese },
+                { "ru-RU", russian }
             };
+        }
+
+        private static void AddCompatibilityStrings(IDictionary<string, string> dictionary, string title, string unsupported, string experimental, string canTry, string system, string processor, string graphics, string displayPath, string details, string noSelectionReason, string unsupportedReason, string experimentalReason, string canTryReason)
+        {
+            dictionary.Add("Compatibility", title);
+            dictionary.Add("CompatibilityUnsupported", unsupported);
+            dictionary.Add("CompatibilityExperimental", experimental);
+            dictionary.Add("CompatibilityCanTry", canTry);
+            dictionary.Add("CompatibilitySystem", system);
+            dictionary.Add("CompatibilityProcessor", processor);
+            dictionary.Add("CompatibilityGraphics", graphics);
+            dictionary.Add("CompatibilityDisplayPath", displayPath);
+            dictionary.Add("CompatibilityDetails", details);
+            dictionary.Add("CompatibilityNoSelectionReason", noSelectionReason);
+            dictionary.Add("CompatibilityUnsupportedReason", unsupportedReason);
+            dictionary.Add("CompatibilityExperimentalReason", experimentalReason);
+            dictionary.Add("CompatibilityCanTryReason", canTryReason);
+        }
+
+        private static void AddOperationStrings(IDictionary<string, string> dictionary, string capabilityApplied, string capabilityFailed, string capabilityRestored, string capabilityRestoreFailed, string modeApplied, string modeFailed, string modeRetained, string modeRetainFailed, string modeRestored, string modeRestoreFailed, string scaleFailed, string displayCacheFailed, string operationFailedDetail, string planSummary, string activeSignal, string registeredSurface, string capabilityPreviewFailed, string displaySettingsOpenFailed, string authorPageOpenFailed, string recoveryFolderOpenFailed)
+        {
+            dictionary.Add("CapabilityApplied", capabilityApplied);
+            dictionary.Add("CapabilityFailed", capabilityFailed);
+            dictionary.Add("CapabilityRestored", capabilityRestored);
+            dictionary.Add("CapabilityRestoreFailed", capabilityRestoreFailed);
+            dictionary.Add("ModeApplied", modeApplied);
+            dictionary.Add("ModeFailed", modeFailed);
+            dictionary.Add("ModeRetained", modeRetained);
+            dictionary.Add("ModeRetainFailed", modeRetainFailed);
+            dictionary.Add("ModeRestored", modeRestored);
+            dictionary.Add("ModeRestoreFailed", modeRestoreFailed);
+            dictionary.Add("ScaleFailed", scaleFailed);
+            dictionary.Add("DisplayCacheFailedDetail", displayCacheFailed);
+            dictionary.Add("OperationFailedDetail", operationFailedDetail);
+            dictionary.Add("PlanSummary", planSummary);
+            dictionary.Add("PlanBasisActiveSize", activeSignal);
+            dictionary.Add("PlanBasisPrimSurfSize", registeredSurface);
+            dictionary.Add("CapabilityPreviewFailed", capabilityPreviewFailed);
+            dictionary.Add("DisplaySettingsOpenFailed", displaySettingsOpenFailed);
+            dictionary.Add("AuthorPageOpenFailed", authorPageOpenFailed);
+            dictionary.Add("RecoveryFolderOpenFailed", recoveryFolderOpenFailed);
+        }
 
         internal static bool IsSupported(string culture)
         {

@@ -166,11 +166,41 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Row="0" Text="{Binding Ui[RegisteredConfigurations]}" Foreground="{StaticResource InkBrush}" FontSize="17" FontWeight="SemiBold" Margin="16,16,16,4" />
                     <TextBlock Grid.Row="1" Text="{Binding Ui[DisplayRecordsHint]}" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="16,0,16,12" />
-                    <DataGrid x:Name="DisplayGrid" Grid.Row="2" ItemsSource="{Binding Records}" SelectedItem="{Binding SelectedRecord, Mode=TwoWay}"
+                    <StackPanel Grid.Row="2" Margin="16,0,16,12">
+                        <DockPanel LastChildFill="False">
+                            <TextBlock Text="{Binding Ui[Compatibility]}" Foreground="{StaticResource InkBrush}" FontSize="16" FontWeight="SemiBold" />
+                            <Border DockPanel.Dock="Right" Background="{Binding CompatibilityStatusBackground}" CornerRadius="4" Padding="8,3" Margin="12,0,0,0">
+                                <TextBlock Text="{Binding CompatibilityStatusText}" Foreground="{Binding CompatibilityStatusForeground}" FontWeight="SemiBold" />
+                            </Border>
+                        </DockPanel>
+                        <TextBlock Text="{Binding CompatibilitySummary}" Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" Margin="0,6,0,7" />
+                        <DockPanel LastChildFill="True">
+                            <TextBlock Text="{Binding Ui[CompatibilitySystem]}" Foreground="{StaticResource MutedBrush}" Width="78" />
+                            <TextBlock Text="{Binding CompatibilitySystem}" Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding CompatibilitySystem}" />
+                        </DockPanel>
+                        <DockPanel LastChildFill="True" Margin="0,3,0,0">
+                            <TextBlock Text="{Binding Ui[CompatibilityProcessor]}" Foreground="{StaticResource MutedBrush}" Width="78" />
+                            <TextBlock Text="{Binding CompatibilityProcessor}" Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding CompatibilityProcessor}" />
+                        </DockPanel>
+                        <DockPanel LastChildFill="True" Margin="0,3,0,0">
+                            <TextBlock Text="{Binding Ui[CompatibilityGraphics]}" Foreground="{StaticResource MutedBrush}" Width="78" />
+                            <TextBlock Text="{Binding CompatibilityGraphics}" Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding CompatibilityGraphics}" />
+                        </DockPanel>
+                        <Expander Header="{Binding Ui[CompatibilityDetails]}" Foreground="{StaticResource AccentBrush}" Margin="0,8,0,0">
+                            <StackPanel Margin="0,6,0,0">
+                                <TextBlock Text="{Binding CompatibilityDisplayPath}" Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding CompatibilitySystem}" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                <TextBlock Text="{Binding CompatibilityProcessor}" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                <TextBlock Text="{Binding CompatibilityGraphics}" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Expander>
+                    </StackPanel>
+                    <DataGrid x:Name="DisplayGrid" Grid.Row="3" ItemsSource="{Binding Records}" SelectedItem="{Binding SelectedRecord, Mode=TwoWay}"
                               AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" CanUserAddRows="False" CanUserSortColumns="True">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="" Binding="{Binding ConnectionStatusText}" SortMemberPath="ConnectionStatus" CanUserSort="True" Width="0.7*" ElementStyle="{StaticResource DataGridTextElement}" />

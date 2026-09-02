@@ -42,6 +42,7 @@
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Xaml" />
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
@@ -75,6 +76,7 @@
     <Compile Include="Services\DisplayModeService.cs" />
     <Compile Include="Services\VirtualDesktopModeService.cs" />
     <Compile Include="Services\ExperimentalScaleService.cs" />
+    <Compile Include="Services\EnvironmentCompatibilityService.cs" />
     <Compile Include="Services\JournalService.cs" />
     <Compile Include="Services\LiveDisplayService.cs" />
     <Compile Include="Services\PortableSettingsService.cs" />

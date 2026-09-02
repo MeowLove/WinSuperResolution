@@ -20,6 +20,8 @@ namespace WinSuperResolution.ViewModels
         private readonly PortableSettingsService _settingsService;
         private readonly DiagnosticExportService _diagnosticExportService;
         private readonly DisplayCacheResetService _displayCacheResetService;
+        private readonly EnvironmentCompatibilityService _environmentCompatibilityService;
+        private readonly VirtualDesktopModeService _virtualDesktopModes;
         private DisplayConfigurationRecord _selectedRecord;
         private DisplayMode _selectedMode;
         private int _selectedScalePercent;
@@ -30,8 +32,12 @@ namespace WinSuperResolution.ViewModels
         private string _scaleAvailability;
         private string _currentModeAvailability;
         private string _lastOperationSummary;
-        private bool _hasOperationInSession;
         private LocalizedStrings _ui;
+        private EnvironmentCompatibilitySnapshot _compatibility;
+        private OperationResult _lastLocalizedOperation;
+        private string _lastSuccessMessageKey;
+        private string _lastFailureMessageKey;
+        private DiagnosticExportResult _lastDiagnosticExport;
 
         public MainViewModel()
         {
@@ -45,6 +51,8 @@ namespace WinSuperResolution.ViewModels
             _settingsService = new PortableSettingsService();
             _diagnosticExportService = new DiagnosticExportService();
             _displayCacheResetService = new DisplayCacheResetService(journals, _diagnostics);
+            _environmentCompatibilityService = new EnvironmentCompatibilityService();
+            _virtualDesktopModes = new VirtualDesktopModeService();
             Records = new ObservableCollection<DisplayConfigurationRecord>();
             CurrentModes = new ObservableCollection<DisplayMode>();
             AvailableScalePercentages = new ObservableCollection<int>();
@@ -59,6 +67,7 @@ namespace WinSuperResolution.ViewModels
             _scaleAvailability = Ui["ScaleNoSelection"];
             _currentModeAvailability = Ui["ModeNoSelection"];
             _lastOperationSummary = Ui["NoOperationYet"];
+            RefreshCompatibility();
         }
 
         public ObservableCollection<DisplayConfigurationRecord> Records { get; private set; }
@@ -67,6 +76,69 @@ namespace WinSuperResolution.ViewModels
         public IList<string> Languages { get; private set; }
         public LocalizedStrings Ui { get { return _ui; } }
         public string RecoveryDataPath { get { return AppPaths.DataRoot; } }
+
+        public string CompatibilityStatusText
+        {
+            get
+            {
+                if (_compatibility == null)
+                    return Ui["CompatibilityExperimental"];
+                switch (_compatibility.Status)
+                {
+                    case EnvironmentCompatibilityStatus.Unsupported: return Ui["CompatibilityUnsupported"];
+                    case EnvironmentCompatibilityStatus.CanTry: return Ui["CompatibilityCanTry"];
+                    default: return Ui["CompatibilityExperimental"];
+                }
+            }
+        }
+
+        public string CompatibilityStatusBackground
+        {
+            get
+            {
+                if (_compatibility == null || _compatibility.Status == EnvironmentCompatibilityStatus.Experimental)
+                    return "#FFF3CD";
+                return _compatibility.Status == EnvironmentCompatibilityStatus.Unsupported ? "#FDE2E1" : "#DCF2E3";
+            }
+        }
+
+        public string CompatibilityStatusForeground
+        {
+            get
+            {
+                if (_compatibility == null || _compatibility.Status == EnvironmentCompatibilityStatus.Experimental)
+                    return "#7A4B00";
+                return _compatibility.Status == EnvironmentCompatibilityStatus.Unsupported ? "#9B2C2C" : "#1F6B3A";
+            }
+        }
+
+        public string CompatibilitySummary
+        {
+            get
+            {
+                if (SelectedRecord == null || SelectedRecord.LiveDisplay == null)
+                    return Ui["CompatibilityNoSelectionReason"];
+                if (_compatibility == null || _compatibility.Status == EnvironmentCompatibilityStatus.Experimental)
+                    return Ui["CompatibilityExperimentalReason"];
+                return _compatibility.Status == EnvironmentCompatibilityStatus.Unsupported
+                    ? Ui["CompatibilityUnsupportedReason"]
+                    : Ui["CompatibilityCanTryReason"];
+            }
+        }
+        public string CompatibilitySystem { get { return _compatibility == null ? Ui["Unavailable"] : _compatibility.WindowsSummary; } }
+        public string CompatibilityProcessor { get { return _compatibility == null ? Ui["Unavailable"] : _compatibility.ProcessorSummary; } }
+        public string CompatibilityGraphics { get { return _compatibility == null ? Ui["Unavailable"] : _compatibility.GraphicsSummary; } }
+        public string CompatibilityDisplayPath
+        {
+            get
+            {
+                if (SelectedRecord == null || SelectedRecord.LiveDisplay == null)
+                    return Ui["CompatibilityNoSelectionReason"];
+                return _compatibility != null && _compatibility.Status != EnvironmentCompatibilityStatus.Unsupported
+                    ? string.Format(Ui["CompatibilityPathSupported"], SelectedRecord.LiveDisplay.DeviceName)
+                    : string.Format(Ui["CompatibilityPathUnavailable"], SelectedRecord.LiveDisplay.DeviceName);
+            }
+        }
 
         public DisplayConfigurationRecord SelectedRecord
         {
@@ -129,9 +201,8 @@ namespace WinSuperResolution.ViewModels
                 _settingsService.SaveLanguage(value);
                 OnPropertyChanged("SelectedLanguage");
                 OnPropertyChanged("Ui");
-                if (!_hasOperationInSession)
-                    LastOperationSummary = Ui["NoOperationYet"];
                 Refresh();
+                RefreshLastOperationPresentation();
             }
         }
 
@@ -270,8 +341,8 @@ namespace WinSuperResolution.ViewModels
             }
             catch (Exception exception)
             {
-                StatusText = Ui["ScanFailed"] + exception.Message;
-                _diagnostics.Write(StatusText);
+                StatusText = Ui["ScanFailed"];
+                _diagnostics.Write("Display scan failed: " + exception);
             }
         }
 
@@ -280,13 +351,14 @@ namespace WinSuperResolution.ViewModels
             try
             {
                 ResolutionPlan plan = BuildSelectedPlan();
-                PlanSummary = plan.Summary + " " + Ui["PreviewOnly"];
+                PlanSummary = DescribePlan(plan) + " " + Ui["PreviewOnly"];
                 StatusText = Ui["PlanBuilt"];
             }
             catch (Exception exception)
             {
-                PlanSummary = Ui["PlanUnavailable"] + exception.Message;
+                PlanSummary = Ui["PlanUnavailable"];
                 StatusText = Ui["PlanValidationFailed"];
+                _diagnostics.Write("Capability plan generation failed: " + exception);
             }
         }
 
@@ -294,13 +366,12 @@ namespace WinSuperResolution.ViewModels
         {
             try
             {
-                OperationResult result = _capabilityService.Apply(BuildSelectedPlan());
-                RecordOperation(result);
-                return result;
+                return RecordLocalizedResult(_capabilityService.Apply(BuildSelectedPlan()), "CapabilityApplied", "CapabilityFailed");
             }
             catch (Exception exception)
             {
-                return new OperationResult { Succeeded = false, Message = exception.Message };
+                _diagnostics.Write("Apply selected capability failed before execution: " + exception);
+                return RecordLocalizedResult(new OperationResult { Succeeded = false, Message = exception.Message }, "CapabilityApplied", "CapabilityFailed");
             }
         }
 
@@ -319,13 +390,12 @@ namespace WinSuperResolution.ViewModels
                     if (record.CanApplyVirtualCapability)
                         plans.Add(_planService.Build(record, SelectedMagnification));
                 }
-                OperationResult result = _capabilityService.ApplyBatch(plans);
-                RecordOperation(result);
-                return result;
+                return RecordLocalizedResult(_capabilityService.ApplyBatch(plans), "CapabilityApplied", "CapabilityFailed");
             }
             catch (Exception exception)
             {
-                return new OperationResult { Succeeded = false, Message = exception.Message };
+                _diagnostics.Write("Apply all capabilities failed before execution: " + exception);
+                return RecordLocalizedResult(new OperationResult { Succeeded = false, Message = exception.Message }, "CapabilityApplied", "CapabilityFailed");
             }
         }
 
@@ -342,57 +412,42 @@ namespace WinSuperResolution.ViewModels
 
         public OperationResult RestoreLatestCapability()
         {
-            OperationResult result = _capabilityService.RestoreLatest();
-            RecordOperation(result);
-            return result;
+            return RecordLocalizedResult(_capabilityService.RestoreLatest(), "CapabilityRestored", "CapabilityRestoreFailed");
         }
 
         public OperationResult ApplyCurrentMode()
         {
             if (!CanManageCurrentState)
-                return new OperationResult { Succeeded = false, Message = "Current mode requires an Active + Exact display association." };
-            OperationResult result = _displayModeService.ApplyWithSnapshot(SelectedMode);
-            RecordOperation(result);
-            return result;
+                return RecordLocalizedResult(new OperationResult { Succeeded = false, Message = "Current mode requires an Active + Exact display association." }, "ModeApplied", "ModeFailed");
+            return RecordLocalizedResult(_displayModeService.ApplyWithSnapshot(SelectedMode), "ModeApplied", "ModeFailed");
         }
 
         public OperationResult ConfirmCurrentMode()
         {
-            OperationResult result = _displayModeService.ConfirmPending();
-            RecordOperation(result);
-            return result;
+            return RecordLocalizedResult(_displayModeService.ConfirmPending(), "ModeRetained", "ModeRetainFailed");
         }
 
         public OperationResult RestoreCurrentMode()
         {
-            OperationResult result = _displayModeService.RestorePending();
-            RecordOperation(result);
+            OperationResult result = RecordLocalizedResult(_displayModeService.RestorePending(), "ModeRestored", "ModeRestoreFailed");
             Refresh();
             return result;
         }
 
         public OperationResult ApplyExperimentalScale()
         {
-            OperationResult result = _scaleService.Apply(SelectedRecord, SelectedScalePercent);
-            if (result.Succeeded)
-                result.Message = Ui["ScaleApplied"];
-            RecordOperation(result);
-            return result;
+            return RecordLocalizedResult(_scaleService.Apply(SelectedRecord, SelectedScalePercent), "ScaleApplied", "ScaleFailed");
         }
 
         public OperationResult RestoreLatestExperimentalScale()
         {
-            OperationResult result = _scaleService.RestoreLatest();
-            if (result.Succeeded)
-                result.Message = Ui["ScaleRestored"];
-            RecordOperation(result);
-            return result;
+            return RecordLocalizedResult(_scaleService.RestoreLatest(), "ScaleRestored", "ScaleFailed");
         }
 
         public string BuildDiagnosticSummary()
         {
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine("WinSuperResolution v2.3 diagnostic");
+            builder.AppendLine("WinSuperResolution v2.5 diagnostic");
             builder.AppendLine("Registered configuration roots: " + Records.Count);
             builder.AppendLine("Writable targets: " + CountTargets());
             foreach (DisplayConfigurationRecord record in Records)
@@ -409,6 +464,8 @@ namespace WinSuperResolution.ViewModels
                     builder.AppendLine("  Correlation: " + record.CorrelationEvidence);
                 if (!string.IsNullOrEmpty(record.ScanWarning))
                     builder.AppendLine("  Warning: " + record.ScanWarning);
+                EnvironmentCompatibilitySnapshot compatibility = _environmentCompatibilityService.Inspect(record, _virtualDesktopModes);
+                builder.AppendLine("  Compatibility: status=" + compatibility.Status + " | system=" + compatibility.WindowsSummary + " | processor=" + compatibility.ProcessorSummary + " | graphics=" + compatibility.GraphicsSummary + " | path=" + compatibility.PathSummary + " | reason=" + compatibility.Reason);
             }
             return builder.ToString();
         }
@@ -416,7 +473,7 @@ namespace WinSuperResolution.ViewModels
         internal DiagnosticExportResult ExportDiagnosticPackage()
         {
             DiagnosticExportResult result = _diagnosticExportService.Export(BuildDiagnosticSummary());
-            _hasOperationInSession = true;
+            _lastDiagnosticExport = result;
             if (result.Succeeded)
             {
                 StatusText = Ui["DiagnosticExported"] + result.ArchivePath;
@@ -432,14 +489,51 @@ namespace WinSuperResolution.ViewModels
 
         public OperationResult ResetDisplayCache()
         {
-            OperationResult result = _displayCacheResetService.Reset();
-            RecordOperation(result);
-            return result;
+            return RecordLocalizedResult(_displayCacheResetService.Reset(), "DisplayCacheResetSuccess", "DisplayCacheFailedDetail");
         }
 
         private ResolutionPlan BuildSelectedPlan()
         {
             return _planService.Build(SelectedRecord, SelectedMagnification);
+        }
+
+        private OperationResult RecordLocalizedResult(OperationResult result, string successKey, string failureKey)
+        {
+            if (result == null)
+                result = new OperationResult { Succeeded = false, Message = "The operation returned no result." };
+            if (!result.Succeeded)
+                _diagnostics.Write("User-visible operation failure: " + result.Message);
+            _lastLocalizedOperation = result;
+            _lastSuccessMessageKey = successKey;
+            _lastFailureMessageKey = failureKey;
+            _lastDiagnosticExport = null;
+            result.Message = result.Succeeded ? Ui[successKey] : Ui[failureKey];
+            RecordOperation(result);
+            return result;
+        }
+
+        private void RefreshLastOperationPresentation()
+        {
+            if (_lastLocalizedOperation != null)
+            {
+                _lastLocalizedOperation.Message = _lastLocalizedOperation.Succeeded ? Ui[_lastSuccessMessageKey] : Ui[_lastFailureMessageKey];
+                LastOperationSummary = BuildOperationSummary(_lastLocalizedOperation);
+                return;
+            }
+            if (_lastDiagnosticExport != null)
+            {
+                LastOperationSummary = _lastDiagnosticExport.Succeeded
+                    ? Ui["DiagnosticExported"] + _lastDiagnosticExport.ArchivePath
+                    : Ui["DiagnosticExportFailed"];
+                return;
+            }
+            LastOperationSummary = Ui["NoOperationYet"];
+        }
+
+        private string DescribePlan(ResolutionPlan plan)
+        {
+            string basis = plan.Basis == CalculationBasis.ActiveSize ? Ui["PlanBasisActiveSize"] : Ui["PlanBasisPrimSurfSize"];
+            return string.Format(Ui["PlanSummary"], plan.Magnification, basis, plan.BaseWidth, plan.BaseHeight, plan.TargetWidth, plan.TargetHeight, plan.Mutations.Count);
         }
 
         private void RefreshCurrentState()
@@ -470,8 +564,22 @@ namespace WinSuperResolution.ViewModels
                 SelectedScalePercent = AvailableScalePercentages.Contains(currentScale) ? currentScale : AvailableScalePercentages[0];
             }
             ScaleAvailability = LocalizeScaleAvailability(_scaleService.GetAvailabilityStatus(SelectedRecord));
+            RefreshCompatibility();
             OnPropertyChanged("CanApplyExperimentalScale");
             OnPropertyChanged("CanManageCurrentState");
+        }
+
+        private void RefreshCompatibility()
+        {
+            _compatibility = _environmentCompatibilityService.Inspect(SelectedRecord, _virtualDesktopModes);
+            OnPropertyChanged("CompatibilityStatusText");
+            OnPropertyChanged("CompatibilityStatusBackground");
+            OnPropertyChanged("CompatibilityStatusForeground");
+            OnPropertyChanged("CompatibilitySummary");
+            OnPropertyChanged("CompatibilitySystem");
+            OnPropertyChanged("CompatibilityProcessor");
+            OnPropertyChanged("CompatibilityGraphics");
+            OnPropertyChanged("CompatibilityDisplayPath");
         }
 
         private string LocalizeCurrentModeAvailability()
@@ -491,7 +599,6 @@ namespace WinSuperResolution.ViewModels
 
         private void RecordOperation(OperationResult result)
         {
-            _hasOperationInSession = true;
             StatusText = result.Message;
             LastOperationSummary = BuildOperationSummary(result);
         }

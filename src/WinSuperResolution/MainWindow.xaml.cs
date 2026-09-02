@@ -71,14 +71,14 @@ namespace WinSuperResolution
             try
             {
                 IList<ResolutionPlan> plans = _viewModel.GetSelectedCapabilityPreview();
-                CapabilityConfirmationWindow confirmation = new CapabilityConfirmationWindow(_viewModel.Ui["ProductName"], _viewModel.Ui["ConfirmCapability"], plans, _viewModel.Ui["ApplySelected"], _viewModel.Ui["Cancel"]);
+                CapabilityConfirmationWindow confirmation = new CapabilityConfirmationWindow(_viewModel.Ui["ProductName"], _viewModel.Ui["ConfirmCapability"], plans, _viewModel.Ui["ApplySelected"], _viewModel.Ui["Cancel"], _viewModel.Ui["PlanSummary"], _viewModel.Ui["PlanBasisActiveSize"], _viewModel.Ui["PlanBasisPrimSurfSize"], _viewModel.Ui["CapabilityRecoveryPolicy"]);
                 confirmation.Owner = this;
                 if (confirmation.ShowDialog() == true)
                     ShowResult(_viewModel.ApplySelectedCapability());
             }
-            catch (Exception exception)
+            catch
             {
-                MessageBox.Show(exception.Message, _viewModel.Ui["Error"], MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(_viewModel.Ui["CapabilityPreviewFailed"], _viewModel.Ui["Error"], MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -87,16 +87,16 @@ namespace WinSuperResolution
             try
             {
                 IList<ResolutionPlan> plans = _viewModel.GetAllCapabilityPreview();
-                CapabilityConfirmationWindow confirmation = new CapabilityConfirmationWindow(_viewModel.Ui["ProductName"], _viewModel.Ui["ConfirmAll"], plans, _viewModel.Ui["ApplyAll"], _viewModel.Ui["Cancel"]);
+                CapabilityConfirmationWindow confirmation = new CapabilityConfirmationWindow(_viewModel.Ui["ProductName"], _viewModel.Ui["ConfirmAll"], plans, _viewModel.Ui["ApplyAll"], _viewModel.Ui["Cancel"], _viewModel.Ui["PlanSummary"], _viewModel.Ui["PlanBasisActiveSize"], _viewModel.Ui["PlanBasisPrimSurfSize"], _viewModel.Ui["CapabilityRecoveryPolicy"]);
                 confirmation.Owner = this;
                 if (confirmation.ShowDialog() != true)
                     return;
                 if (MessageBox.Show(_viewModel.Ui["ConfirmAll"], _viewModel.Ui["ProductName"], MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                     ShowResult(_viewModel.ApplyAllCapabilities());
             }
-            catch (Exception exception)
+            catch
             {
-                MessageBox.Show(exception.Message, _viewModel.Ui["Error"], MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(_viewModel.Ui["CapabilityPreviewFailed"], _viewModel.Ui["Error"], MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -142,9 +142,9 @@ namespace WinSuperResolution
             {
                 Process.Start("ms-settings:display");
             }
-            catch (Exception exception)
+            catch
             {
-                MessageBox.Show(exception.Message, _viewModel.Ui["DisplaySettings"], MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(_viewModel.Ui["DisplaySettingsOpenFailed"], _viewModel.Ui["DisplaySettings"], MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -158,9 +158,9 @@ namespace WinSuperResolution
                     UseShellExecute = true
                 });
             }
-            catch (Exception exception)
+            catch
             {
-                MessageBox.Show(exception.Message, _viewModel.Ui["AboutAuthor"], MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(_viewModel.Ui["AuthorPageOpenFailed"], _viewModel.Ui["AboutAuthor"], MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -197,9 +197,9 @@ namespace WinSuperResolution
                     UseShellExecute = false
                 });
             }
-            catch (Exception exception)
+            catch
             {
-                MessageBox.Show(_viewModel.Ui["RestartFailed"] + Environment.NewLine + exception.Message, _viewModel.Ui["Error"], MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(_viewModel.Ui["RestartFailed"], _viewModel.Ui["Error"], MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -209,9 +209,9 @@ namespace WinSuperResolution
             {
                 Process.Start("explorer.exe", AppPaths.DataRoot);
             }
-            catch (Exception exception)
+            catch
             {
-                MessageBox.Show(exception.Message, _viewModel.Ui["Recovery"], MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(_viewModel.Ui["RecoveryFolderOpenFailed"], _viewModel.Ui["Recovery"], MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
