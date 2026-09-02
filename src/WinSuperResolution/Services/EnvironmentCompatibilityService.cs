@@ -9,11 +9,11 @@ namespace WinSuperResolution.Services
 {
     internal sealed class EnvironmentCompatibilityService
     {
-        private const int RecommendedDriverAgeDays = 548;
+        internal const int RecommendedDriverAgeDays = 548;
 
         internal EnvironmentCompatibilitySnapshot Inspect(DisplayConfigurationRecord record, VirtualDesktopModeService virtualDesktopModes)
         {
-            EnvironmentCompatibilitySnapshot snapshot = ReadPlatform();
+            EnvironmentCompatibilitySnapshot snapshot = ReadPlatform(record == null ? null : record.LiveDisplay);
             if (record == null || record.LiveDisplay == null)
             {
                 snapshot.Status = EnvironmentCompatibilityStatus.Experimental;
@@ -46,7 +46,7 @@ namespace WinSuperResolution.Services
             return snapshot;
         }
 
-        private static EnvironmentCompatibilitySnapshot ReadPlatform()
+        private static EnvironmentCompatibilitySnapshot ReadPlatform(LiveDisplayInfo liveDisplay)
         {
             EnvironmentCompatibilitySnapshot snapshot = new EnvironmentCompatibilitySnapshot();
             snapshot.WindowsSummary = Environment.OSVersion.VersionString + " | " + (Environment.Is64BitOperatingSystem ? "x64" : "x86");
@@ -73,29 +73,78 @@ namespace WinSuperResolution.Services
                 // Hardware inventory is advisory; a denied WMI provider must not affect display operations.
             }
 
-            if (adapters.Count == 0)
+            snapshot.DetectedGraphicsSummary = JoinAdapters(adapters);
+            if (liveDisplay == null)
             {
-                snapshot.GraphicsSummary = "Graphics adapter and driver information unavailable";
+                snapshot.GraphicsSummary = snapshot.DetectedGraphicsSummary;
+                snapshot.OtherGraphicsSummary = snapshot.DetectedGraphicsSummary;
+                return snapshot;
+            }
+
+            snapshot.SelectedDisplaySummary = DescribeDisplay(liveDisplay);
+            GraphicsAdapterInfo activeAdapter = FindActiveAdapter(adapters, liveDisplay.AdapterName);
+            if (activeAdapter == null)
+            {
+                snapshot.GraphicsSummary = "Driver information for the active display adapter is unavailable";
+                snapshot.OtherGraphicsSummary = snapshot.DetectedGraphicsSummary;
                 snapshot.HasOldOrUnknownDriver = true;
+                return snapshot;
             }
-            else
-            {
-                StringBuilder graphics = new StringBuilder();
-                foreach (GraphicsAdapterInfo adapter in adapters)
-                {
-                    if (graphics.Length > 0)
-                        graphics.Append("; ");
-                    graphics.Append(adapter.Name).Append(" | ").Append(adapter.DriverVersion);
-                    if (adapter.DriverDate.HasValue)
-                        graphics.Append(" | ").Append(adapter.DriverDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-                    else
-                        snapshot.HasOldOrUnknownDriver = true;
-                    if (adapter.DriverDate.HasValue && (DateTime.UtcNow.Date - adapter.DriverDate.Value.Date).TotalDays > RecommendedDriverAgeDays)
-                        snapshot.HasOldOrUnknownDriver = true;
-                }
-                snapshot.GraphicsSummary = graphics.ToString();
-            }
+
+            snapshot.ActiveAdapterMatched = true;
+            snapshot.GraphicsSummary = DescribeAdapter(activeAdapter);
+            snapshot.OtherGraphicsSummary = JoinAdapters(adapters, activeAdapter);
+            snapshot.DriverDate = activeAdapter.DriverDate;
+            snapshot.HasOldOrUnknownDriver = IsOldOrUnknown(activeAdapter);
             return snapshot;
+        }
+
+        private static GraphicsAdapterInfo FindActiveAdapter(IEnumerable<GraphicsAdapterInfo> adapters, string adapterName)
+        {
+            if (string.IsNullOrEmpty(adapterName))
+                return null;
+            foreach (GraphicsAdapterInfo adapter in adapters)
+            {
+                if (string.Equals(adapter.Name, adapterName, StringComparison.OrdinalIgnoreCase))
+                    return adapter;
+            }
+            return null;
+        }
+
+        private static string DescribeDisplay(LiveDisplayInfo display)
+        {
+            string name = string.IsNullOrEmpty(display.FriendlyName) ? "Display" : display.FriendlyName;
+            string device = string.IsNullOrEmpty(display.DeviceName) ? "" : " [" + display.DeviceName + "]";
+            string connection = string.IsNullOrEmpty(display.ConnectionTechnology) ? "" : " | " + display.ConnectionTechnology;
+            return name + device + connection;
+        }
+
+        private static string JoinAdapters(IEnumerable<GraphicsAdapterInfo> adapters, GraphicsAdapterInfo excluded = null)
+        {
+            StringBuilder graphics = new StringBuilder();
+            foreach (GraphicsAdapterInfo adapter in adapters)
+            {
+                if (ReferenceEquals(adapter, excluded))
+                    continue;
+                if (graphics.Length > 0)
+                    graphics.Append("; ");
+                graphics.Append(DescribeAdapter(adapter));
+            }
+            return graphics.ToString();
+        }
+
+        private static string DescribeAdapter(GraphicsAdapterInfo adapter)
+        {
+            StringBuilder text = new StringBuilder();
+            text.Append(adapter.Name).Append(" | ").Append(adapter.DriverVersion);
+            if (adapter.DriverDate.HasValue)
+                text.Append(" | ").Append(adapter.DriverDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            return text.ToString();
+        }
+
+        private static bool IsOldOrUnknown(GraphicsAdapterInfo adapter)
+        {
+            return adapter == null || !adapter.DriverDate.HasValue || (DateTime.Today - adapter.DriverDate.Value.Date).TotalDays > RecommendedDriverAgeDays;
         }
 
         private static string ReadFirstValue(string query, string propertyName, string fallback)
@@ -153,7 +202,12 @@ namespace WinSuperResolution.Services
         internal string WindowsSummary { get; set; }
         internal string ProcessorSummary { get; set; }
         internal string GraphicsSummary { get; set; }
+        internal string DetectedGraphicsSummary { get; set; }
+        internal string OtherGraphicsSummary { get; set; }
+        internal string SelectedDisplaySummary { get; set; }
         internal string PathSummary { get; set; }
+        internal DateTime? DriverDate { get; set; }
+        internal bool ActiveAdapterMatched { get; set; }
         internal bool HasOldOrUnknownDriver { get; set; }
     }
 }

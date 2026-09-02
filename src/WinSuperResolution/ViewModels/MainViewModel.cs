@@ -127,7 +127,44 @@ namespace WinSuperResolution.ViewModels
         }
         public string CompatibilitySystem { get { return _compatibility == null ? Ui["Unavailable"] : _compatibility.WindowsSummary; } }
         public string CompatibilityProcessor { get { return _compatibility == null ? Ui["Unavailable"] : _compatibility.ProcessorSummary; } }
-        public string CompatibilityGraphics { get { return _compatibility == null ? Ui["Unavailable"] : _compatibility.GraphicsSummary; } }
+        public string CompatibilityGraphics
+        {
+            get
+            {
+                if (SelectedRecord == null || SelectedRecord.LiveDisplay == null)
+                    return Ui["CompatibilityNoSelectedDisplay"];
+                return _compatibility == null ? Ui["Unavailable"] : _compatibility.GraphicsSummary;
+            }
+        }
+        public string CompatibilitySelectedDisplay { get { return _compatibility == null ? Ui["Unavailable"] : _compatibility.SelectedDisplaySummary; } }
+        public string CompatibilityAdapterAssociation
+        {
+            get
+            {
+                if (SelectedRecord == null || SelectedRecord.LiveDisplay == null)
+                    return Ui["CompatibilityNoSelectionReason"];
+                return _compatibility != null && _compatibility.ActiveAdapterMatched ? Ui["CompatibilityAdapterMatched"] : Ui["CompatibilityAdapterNotMatched"];
+            }
+        }
+        public string CompatibilityDriverFreshness
+        {
+            get
+            {
+                if (_compatibility == null || !_compatibility.DriverDate.HasValue)
+                    return Ui["CompatibilityDriverUnavailable"];
+                int ageDays = Math.Max(0, (DateTime.Today - _compatibility.DriverDate.Value.Date).Days);
+                return string.Format(Ui["CompatibilityDriverAge"], ageDays, EnvironmentCompatibilityService.RecommendedDriverAgeDays);
+            }
+        }
+        public string CompatibilityOtherGraphics
+        {
+            get
+            {
+                if (_compatibility == null || string.IsNullOrEmpty(_compatibility.OtherGraphicsSummary))
+                    return Ui["CompatibilityNoOtherGraphics"];
+                return _compatibility.OtherGraphicsSummary;
+            }
+        }
         public string CompatibilityDisplayPath
         {
             get
@@ -465,7 +502,7 @@ namespace WinSuperResolution.ViewModels
                 if (!string.IsNullOrEmpty(record.ScanWarning))
                     builder.AppendLine("  Warning: " + record.ScanWarning);
                 EnvironmentCompatibilitySnapshot compatibility = _environmentCompatibilityService.Inspect(record, _virtualDesktopModes);
-                builder.AppendLine("  Compatibility: status=" + compatibility.Status + " | system=" + compatibility.WindowsSummary + " | processor=" + compatibility.ProcessorSummary + " | graphics=" + compatibility.GraphicsSummary + " | path=" + compatibility.PathSummary + " | reason=" + compatibility.Reason);
+                builder.AppendLine("  Compatibility: status=" + compatibility.Status + " | system=" + compatibility.WindowsSummary + " | processor=" + compatibility.ProcessorSummary + " | selectedDisplay=" + compatibility.SelectedDisplaySummary + " | activeGraphics=" + compatibility.GraphicsSummary + " | otherGraphics=" + compatibility.OtherGraphicsSummary + " | detectedGraphics=" + compatibility.DetectedGraphicsSummary + " | activeAdapterMatched=" + compatibility.ActiveAdapterMatched + " | path=" + compatibility.PathSummary + " | reason=" + compatibility.Reason);
             }
             return builder.ToString();
         }
@@ -579,6 +616,10 @@ namespace WinSuperResolution.ViewModels
             OnPropertyChanged("CompatibilitySystem");
             OnPropertyChanged("CompatibilityProcessor");
             OnPropertyChanged("CompatibilityGraphics");
+            OnPropertyChanged("CompatibilitySelectedDisplay");
+            OnPropertyChanged("CompatibilityAdapterAssociation");
+            OnPropertyChanged("CompatibilityDriverFreshness");
+            OnPropertyChanged("CompatibilityOtherGraphics");
             OnPropertyChanged("CompatibilityDisplayPath");
         }
 

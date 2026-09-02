@@ -90,6 +90,9 @@ namespace WinSuperResolution.SmokeTests
             Assert(Strings.ForCulture("en-US")["Compatibility"] == "Environment and compatibility", "English compatibility label is missing.");
             Assert(Strings.ForCulture("zh-CN")["Compatibility"] == "环境与兼容性", "Chinese compatibility label is missing.");
             Assert(Strings.ForCulture("ru-RU")["Compatibility"] == "Среда и совместимость", "Russian compatibility label is missing.");
+            Assert(Strings.ForCulture("en-US")["CompatibilityOtherGraphics"] == "Other display adapters", "English compatibility detail label is missing.");
+            Assert(Strings.ForCulture("zh-CN")["CompatibilityDriverFreshness"] == "驱动新鲜度", "Chinese compatibility detail label is missing.");
+            Assert(Strings.ForCulture("ru-RU")["CompatibilityAdapterAssociation"] == "Связь с адаптером", "Russian compatibility detail label is missing.");
             Assert(Strings.ForCulture("unknown")["ProductName"] == "WinSuperResolution", "Unsupported cultures must fall back to English.");
         }
 
