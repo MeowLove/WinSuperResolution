@@ -63,6 +63,15 @@ The **Display Settings** button remains available for manual Windows configurati
 
 If an active display is shown as `Candidate` or `Configuration conflict`, or if WinSuperResolution lists more active displays than are physically connected, do not apply a desktop-mode, scaling, or virtual-capability change. Registry rows are configurations, not physical-display counts; only a unique stable identity match becomes `Active + Exact`. Historical, non-superseded rows may remain eligible for separate virtual-capability planning.
 
+### When a change does not appear or is later reverted
+
+1. Close remote-control, remote-play, cloud-gaming, streaming, or display-management software before changing display settings. Tools such as ToDesk, TeamViewer, or NetEase UU in applicable modes can create or switch display sessions, virtual displays, or scaling settings.
+2. If the display list is duplicated, stays `Candidate`, or the expected mode never appears, first export a diagnostic package. Use **Reset display cache (final repair)** only when the association issue persists, then allow the required immediate Windows restart.
+3. After restart, open WinSuperResolution, click **Refresh**, generate the intended capability plan, and review its targets. Use **Apply selected capability** for one intended configuration. Use **Apply all capabilities** only after confirming that every listed target should be changed.
+4. Restart Windows or reinitialize the display driver if requested. In Windows **Display Settings**, choose the highest intended available desktop resolution.
+5. Sign out or restart if needed, then select the desired Windows display scaling percentage.
+6. When reconnecting a remote-control or streaming tool, recheck the selected resolution and scale. If the tool changes the active display session or configuration again, repeat the reviewed application flow; export a new diagnostic package if this repeats.
+
 To report a problem:
 
 1. Reproduce the problem and note what you expected and what happened.
