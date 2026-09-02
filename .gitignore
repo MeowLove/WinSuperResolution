@@ -2,7 +2,6 @@
 /.vs/
 **/bin/
 **/obj/
-/artifacts/
 /deliverables/
 *.user
 *.suo
@@ -15,3 +14,6 @@
 # Private local guidance and product materials
 /AGENTS.md
 /requirements/
+
+# Local release packaging inputs
+/docs/releases/
