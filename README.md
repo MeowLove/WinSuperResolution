@@ -51,7 +51,8 @@ The usual workflow is: configure virtual-resolution capability, restart or reini
 
 This tool changes Windows display configuration. It is not an AI image upscaler and does not provide NVIDIA DLSS, AMD FSR, Intel XeSS, or equivalent GPU rendering features.
 
-<img width="3622" height="2395" alt="image" src="https://github.com/user-attachments/assets/9c5776b6-0102-416e-98a0-dd50def7b16a" />
+
+<img width="4320" height="2604" alt="image" src="https://github.com/user-attachments/assets/71262cdf-909c-4d5f-bf77-dc267ddf8afa" />
 
 
 ## Requirements
