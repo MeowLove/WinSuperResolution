@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using WinSuperResolution.Models;
@@ -12,7 +13,6 @@ namespace WinSuperResolution
 {
     public partial class MainWindow : Window
     {
-        private const string AuthorBlogUrl = "https://www.cxthhhhh.com/2026/08/31/winsuperresolution-windows-hidpi-style-scaling-v2.html";
         private readonly MainViewModel _viewModel;
 
         public MainWindow()
@@ -21,6 +21,7 @@ namespace WinSuperResolution
             _viewModel = new MainViewModel();
             DataContext = _viewModel;
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+            UpdateWindowTitle();
             ApplyLocalizedColumnHeaders();
             Loaded += MainWindow_Loaded;
         }
@@ -28,7 +29,10 @@ namespace WinSuperResolution
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "Ui")
+            {
                 ApplyLocalizedColumnHeaders();
+                UpdateWindowTitle();
+            }
         }
 
         private void ApplyLocalizedColumnHeaders()
@@ -150,18 +154,20 @@ namespace WinSuperResolution
 
         private void AboutAuthorButton_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = AuthorBlogUrl,
-                    UseShellExecute = true
-                });
-            }
-            catch
-            {
-                MessageBox.Show(_viewModel.Ui["AuthorPageOpenFailed"], _viewModel.Ui["AboutAuthor"], MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            AboutWindow about = new AboutWindow(_viewModel.Ui, GetApplicationVersion());
+            about.Owner = this;
+            about.ShowDialog();
+        }
+
+        private void UpdateWindowTitle()
+        {
+            Title = _viewModel.Ui["ProductName"] + " v" + GetApplicationVersion();
+        }
+
+        private static string GetApplicationVersion()
+        {
+            Version version = Assembly.GetExecutingAssembly().GetName().Version;
+            return version == null ? "unknown" : version.ToString();
         }
 
         private void ExportDiagnosticButton_Click(object sender, RoutedEventArgs e)

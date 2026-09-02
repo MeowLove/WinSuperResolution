@@ -15,6 +15,13 @@ WinSuperResolution is created by **CXT**, also known as **MeowLove**.
 
 <img width="256" height="256" alt="WinSuperResolution_Logo" src="https://github.com/user-attachments/assets/33560a97-8cd2-40d8-ae23-6dce05fd663e" />
 
+## Version 2.5
+
+- Adds the **Environment and compatibility** panel above the registered display list. It reports the selected active display path, its exactly matched graphics adapter, driver version and driver date, plus other detected adapters in expandable evidence.
+- Uses advisory-only red (**Unsupported**), yellow (**Experimental**), and green (**Can try**) states. These communicate observed support evidence and driver freshness; they never block an existing feature.
+- Adds an in-app **About** window with the product version, author information, and separate links to the official website, introduction, and GitHub repository.
+- Shows the assembly version in the main window title so diagnostic reports and user feedback can identify the running build.
+
 ## Use Cases
 
 WinSuperResolution is designed for the following scenarios:

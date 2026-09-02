@@ -52,10 +52,20 @@
             <Setter Property="Foreground" Value="#FFF8F8" />
         </Style>
         <Style TargetType="ComboBox">
-            <Setter Property="MinHeight" Value="34" />
-            <Setter Property="Padding" Value="8,3" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Padding" Value="10,0,8,0" />
             <Setter Property="Background" Value="#FFFFFF" />
             <Setter Property="BorderBrush" Value="#C9D5DB" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#17212B" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+        </Style>
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
         </Style>
         <Style TargetType="DataGridRow">
             <Setter Property="Padding" Value="0" />

@@ -80,9 +80,12 @@ namespace WinSuperResolution.SmokeTests
             Assert(Strings.ForCulture("en-US")["Refresh"] == "Refresh", "English embedded resource is missing.");
             Assert(Strings.ForCulture("zh-CN")["Refresh"] == "刷新", "Chinese embedded resource is missing.");
             Assert(Strings.ForCulture("ru-RU")["Refresh"] == "Обновить", "Russian embedded resource is missing.");
-            Assert(Strings.ForCulture("en-US")["AboutAuthor"] == "About CXT (MeowLove)", "English author entry is missing.");
-            Assert(Strings.ForCulture("zh-CN")["AboutAuthor"] == "关于作者 CXT（MeowLove）", "Chinese author entry is missing.");
-            Assert(Strings.ForCulture("ru-RU")["AboutAuthor"] == "Об авторе CXT (MeowLove)", "Russian author entry is missing.");
+            Assert(Strings.ForCulture("en-US")["AboutAuthor"] == "About", "English about entry is missing.");
+            Assert(Strings.ForCulture("zh-CN")["AboutAuthor"] == "关于", "Chinese about entry is missing.");
+            Assert(Strings.ForCulture("ru-RU")["AboutAuthor"] == "О программе", "Russian about entry is missing.");
+            Assert(Strings.ForCulture("en-US")["AboutWebsite"] == "Official website", "English about website label is missing.");
+            Assert(Strings.ForCulture("zh-CN")["AboutIntroduction"] == "介绍页面", "Chinese about introduction label is missing.");
+            Assert(Strings.ForCulture("ru-RU")["AboutGitHub"] == "GitHub", "Russian about GitHub label is missing.");
             Assert(Strings.ForCulture("zh-CN")["ScanComplete"].StartsWith("扫描完成"), "Chinese scan status is not localized.");
             Assert(Strings.ForCulture("en-US")["ResetDisplayCachePrompt"].StartsWith("Final repair"), "English display-cache reset prompt is missing.");
             Assert(Strings.ForCulture("zh-CN")["ResetDisplayCachePrompt"].StartsWith("最终修复方案"), "Chinese display-cache reset prompt is missing.");

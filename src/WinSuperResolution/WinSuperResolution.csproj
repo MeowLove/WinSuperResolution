@@ -84,6 +84,7 @@
     <Compile Include="Services\ResolutionPlanService.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="Windows\ModeConfirmationWindow.cs" />
+    <Compile Include="Windows\AboutWindow.cs" />
     <Compile Include="Windows\CapabilityConfirmationWindow.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
