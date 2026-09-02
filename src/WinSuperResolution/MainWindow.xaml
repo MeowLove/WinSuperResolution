@@ -176,41 +176,49 @@
                             </Border>
                         </DockPanel>
                         <TextBlock Text="{Binding CompatibilitySummary}" Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" Margin="0,8,0,8" />
-                        <DockPanel LastChildFill="True">
-                            <TextBlock Text="{Binding Ui[CompatibilitySystem]}" Foreground="{StaticResource MutedBrush}" Width="78" />
-                            <TextBlock Text="{Binding CompatibilitySystem}" Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding CompatibilitySystem}" />
-                        </DockPanel>
-                        <DockPanel LastChildFill="True" Margin="0,3,0,0">
-                            <TextBlock Text="{Binding Ui[CompatibilityProcessor]}" Foreground="{StaticResource MutedBrush}" Width="78" />
-                            <TextBlock Text="{Binding CompatibilityProcessor}" Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding CompatibilityProcessor}" />
-                        </DockPanel>
-                        <DockPanel LastChildFill="True" Margin="0,3,0,0">
-                            <TextBlock Text="{Binding Ui[CompatibilityGraphics]}" Foreground="{StaticResource MutedBrush}" Width="78" />
-                            <TextBlock Text="{Binding CompatibilityGraphics}" Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding CompatibilityGraphics}" />
-                        </DockPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="{Binding Ui[CompatibilitySystem]}" Foreground="{StaticResource MutedBrush}" />
+                            <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding CompatibilitySystem}" Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding CompatibilitySystem}" />
+                            <TextBlock Grid.Row="1" Text="{Binding Ui[CompatibilityProcessor]}" Foreground="{StaticResource MutedBrush}" Margin="0,3,0,0" />
+                            <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding CompatibilityProcessor}" Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding CompatibilityProcessor}" Margin="0,3,0,0" />
+                            <TextBlock Grid.Row="2" Text="{Binding Ui[CompatibilityGraphics]}" Foreground="{StaticResource MutedBrush}" Margin="0,3,0,0" />
+                            <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding CompatibilityGraphics}" Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding CompatibilityGraphics}" Margin="0,3,0,0" />
+                        </Grid>
                         <Expander Header="{Binding Ui[CompatibilityDetails]}" Foreground="{StaticResource AccentBrush}" Margin="0,8,0,0">
-                            <StackPanel Margin="0,6,0,0">
-                                <DockPanel LastChildFill="True">
-                                    <TextBlock Text="{Binding Ui[CompatibilitySelectedDisplay]}" Foreground="{StaticResource MutedBrush}" Width="126" />
-                                    <TextBlock Text="{Binding CompatibilitySelectedDisplay}" Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" />
-                                </DockPanel>
-                                <DockPanel LastChildFill="True" Margin="0,4,0,0">
-                                    <TextBlock Text="{Binding Ui[CompatibilityDisplayPath]}" Foreground="{StaticResource MutedBrush}" Width="126" />
-                                    <TextBlock Text="{Binding CompatibilityDisplayPath}" Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" />
-                                </DockPanel>
-                                <DockPanel LastChildFill="True" Margin="0,4,0,0">
-                                    <TextBlock Text="{Binding Ui[CompatibilityAdapterAssociation]}" Foreground="{StaticResource MutedBrush}" Width="126" />
-                                    <TextBlock Text="{Binding CompatibilityAdapterAssociation}" Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" />
-                                </DockPanel>
-                                <DockPanel LastChildFill="True" Margin="0,4,0,0">
-                                    <TextBlock Text="{Binding Ui[CompatibilityDriverFreshness]}" Foreground="{StaticResource MutedBrush}" Width="126" />
-                                    <TextBlock Text="{Binding CompatibilityDriverFreshness}" Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" />
-                                </DockPanel>
-                                <DockPanel LastChildFill="True" Margin="0,4,0,0">
-                                    <TextBlock Text="{Binding Ui[CompatibilityOtherGraphics]}" Foreground="{StaticResource MutedBrush}" Width="126" />
-                                    <TextBlock Text="{Binding CompatibilityOtherGraphics}" Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" />
-                                </DockPanel>
-                            </StackPanel>
+                            <Grid Margin="0,6,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="{Binding Ui[CompatibilitySelectedDisplay]}" Foreground="{StaticResource MutedBrush}" />
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding CompatibilitySelectedDisplay}" Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" />
+                                <TextBlock Grid.Row="1" Text="{Binding Ui[CompatibilityDisplayPath]}" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0" />
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding CompatibilityDisplayPath}" Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                <TextBlock Grid.Row="2" Text="{Binding Ui[CompatibilityAdapterAssociation]}" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0" />
+                                <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding CompatibilityAdapterAssociation}" Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                <TextBlock Grid.Row="3" Text="{Binding Ui[CompatibilityDriverFreshness]}" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0" />
+                                <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding CompatibilityDriverFreshness}" Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                <TextBlock Grid.Row="4" Text="{Binding Ui[CompatibilityOtherGraphics]}" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0" />
+                                <TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding CompatibilityOtherGraphics}" Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                            </Grid>
                         </Expander>
                     </StackPanel>
                 </Border>

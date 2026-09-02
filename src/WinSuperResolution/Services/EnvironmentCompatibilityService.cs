@@ -127,7 +127,7 @@ namespace WinSuperResolution.Services
                 if (ReferenceEquals(adapter, excluded))
                     continue;
                 if (graphics.Length > 0)
-                    graphics.Append("; ");
+                    graphics.AppendLine();
                 graphics.Append(DescribeAdapter(adapter));
             }
             return graphics.ToString();
