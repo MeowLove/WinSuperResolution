@@ -113,7 +113,16 @@ WinSuperResolution предназначен для следующих сцена
 
 ## Сборка
 
-Откройте `WinSuperResolution.sln` в Visual Studio и соберите конфигурацию `Release|x64`. Проект использует .NET Framework, устанавливаемый вместе со средствами разработки Windows, и не требует сторонних UI-фреймворков или сред выполнения.
+Чтобы создать проверенный локальный релиз, выполните:
+
+```powershell
+.\scripts\Build-Release.ps1
+.\scripts\Package-Release.ps1 -Version 2.3.0
+```
+
+Скрипт сборки пересобирает `Release|x64` через .NET Framework MSBuild и запускает Smoke Tests. Скрипт упаковки создаёт `deliverables/WinSuperResolution-v<version>-win-x64.zip` и файл SHA-256 из проверенного EXE и публичной документации; GitHub Release он не загружает.
+
+Также можно открыть `WinSuperResolution.sln` в Visual Studio и собрать конфигурацию `Release|x64`. Проект использует .NET Framework, устанавливаемый вместе со средствами разработки Windows, и не требует сторонних UI-фреймворков или сред выполнения.
 
 ## Лицензия
 

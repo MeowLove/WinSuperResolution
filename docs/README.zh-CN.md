@@ -113,7 +113,16 @@ WinSuperResolution 适用于以下场景：
 
 ## 编译
 
-使用 Visual Studio 打开 `WinSuperResolution.sln`，编译 `Release|x64` 配置。项目不依赖第三方 UI 框架或第三方运行库。
+要生成经过验证的本地发布包，请运行：
+
+```powershell
+.\scripts\Build-Release.ps1
+.\scripts\Package-Release.ps1 -Version 2.3.0
+```
+
+编译脚本会使用 .NET Framework MSBuild 重建 `Release|x64`，并运行 Smoke Tests。打包脚本会从已验证的 EXE 和公开文档生成 `deliverables/WinSuperResolution-v<version>-win-x64.zip` 及其 SHA-256 文件；它不会上传 GitHub Release。
+
+也可以使用 Visual Studio 打开 `WinSuperResolution.sln`，编译 `Release|x64` 配置。项目不依赖第三方 UI 框架或第三方运行库。
 
 ## 许可证
 

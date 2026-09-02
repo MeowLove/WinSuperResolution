@@ -114,7 +114,16 @@ Move the executable directory as a whole to preserve the portable configuration.
 
 ## Build
 
-Open `WinSuperResolution.sln` in Visual Studio and build the `Release|x64` configuration. The project uses the .NET Framework installed with Windows development tools and does not require third-party UI frameworks or runtimes.
+For a verified local release, run:
+
+```powershell
+.\scripts\Build-Release.ps1
+.\scripts\Package-Release.ps1 -Version 2.3.0
+```
+
+The build script rebuilds `Release|x64` with .NET Framework MSBuild and runs the smoke tests. The package script creates `deliverables/WinSuperResolution-v<version>-win-x64.zip` and its SHA-256 file from the verified executable and public documentation. It does not upload a GitHub Release.
+
+You can also open `WinSuperResolution.sln` in Visual Studio and build the `Release|x64` configuration. The project uses the .NET Framework installed with Windows development tools and does not require third-party UI frameworks or runtimes.
 
 ## License
 
