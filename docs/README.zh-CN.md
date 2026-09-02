@@ -51,7 +51,7 @@ WinSuperResolution 适用于以下场景：
 
 本工具修改 Windows 显示配置，不是 AI 图像放大工具，也不提供 NVIDIA DLSS、AMD FSR、Intel XeSS 或同类 GPU 渲染功能。
 
-<img width="3622" height="2395" alt="image" src="https://github.com/user-attachments/assets/9c5776b6-0102-416e-98a0-dd50def7b16a" />
+<img width="4320" height="2604" alt="image" src="https://github.com/user-attachments/assets/71262cdf-909c-4d5f-bf77-dc267ddf8afa" />
 
 ## 系统要求
 
