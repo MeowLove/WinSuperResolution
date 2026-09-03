@@ -31,15 +31,15 @@ WinSuperResolution 由 **CXT** 创作，别名 **MeowLove**。
 ### V3.3.0 截图
 
 <!-- V3.3_SCREENSHOT_1_START: 主导航与紧凑头部 -->
-<!-- 请以主导航与紧凑头部截图替换此标记。 -->
+<img width="3964" height="2265" alt="主导航与紧凑头部" src="https://github.com/user-attachments/assets/e978d94f-ce40-4307-8477-791a32db258c" />
 <!-- V3.3_SCREENSHOT_1_END -->
 
 <!-- V3.3_SCREENSHOT_2_START: 超分推荐流程与排障 -->
-<!-- 请以超分页操作流程与排障截图替换此标记。 -->
+<img width="3964" height="2265" alt="超分推荐流程与排障" src="https://github.com/user-attachments/assets/d0b8397e-4c3c-45a4-8950-97f72d28960c" />
 <!-- V3.3_SCREENSHOT_2_END -->
 
 <!-- V3.3_SCREENSHOT_3_START: 缩放流程与 Windows 显示设置替代路径 -->
-<!-- 请以缩放页操作流程截图替换此标记。 -->
+<img width="3964" height="2265" alt="缩放流程与 Windows 显示设置替代路径" src="https://github.com/user-attachments/assets/8f24f206-1688-47d8-8939-46c2f05d6832" />
 <!-- V3.3_SCREENSHOT_3_END -->
 
 ## 适用场景
@@ -70,8 +70,6 @@ WinSuperResolution 适用于以下场景：
 - 支持 English、简体中文和 Русский。
 
 本工具修改 Windows 显示配置，不是 AI 图像放大工具，也不提供 NVIDIA DLSS、AMD FSR、Intel XeSS 或同类 GPU 渲染功能。
-
-<img width="4320" height="2604" alt="image" src="https://github.com/user-attachments/assets/71262cdf-909c-4d5f-bf77-dc267ddf8afa" />
 
 ## 系统要求
 
