@@ -44,12 +44,69 @@
             <Setter Property="Foreground" Value="#24404A" />
         </Style>
         <Style x:Key="HeaderButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="MinHeight" Value="32" />
+            <Setter Property="Padding" Value="12,6" />
             <Setter Property="Background" Value="#24525A" />
             <Setter Property="Foreground" Value="#F7FCFC" />
         </Style>
         <Style x:Key="DangerHeaderButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="MinHeight" Value="32" />
+            <Setter Property="Padding" Value="12,6" />
             <Setter Property="Background" Value="#8F3F46" />
             <Setter Property="Foreground" Value="#FFF8F8" />
+        </Style>
+        <Style x:Key="PrimaryNavigationTab" TargetType="TabItem">
+            <Setter Property="Foreground" Value="#36515A" />
+            <Setter Property="Background" Value="#E8EEF1" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Padding" Value="16,6,16,5" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="TabSurface" Background="{TemplateBinding Background}" CornerRadius="5">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="3" />
+                                </Grid.RowDefinitions>
+                                <ContentPresenter Grid.Row="0" ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border x:Name="ActiveIndicator" Grid.Row="1" Background="{StaticResource AccentBrush}" Visibility="Collapsed" />
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TabSurface" Property="Background" Value="#D8E6E9" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="TabSurface" Property="Background" Value="#143D43" />
+                                <Setter Property="Foreground" Value="White" />
+                                <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="PrimaryNavigationTabControl" TargetType="TabControl">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabControl">
+                        <Grid KeyboardNavigation.TabNavigation="Local">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="56" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <UniformGrid Rows="1" IsItemsHost="True" />
+                            <ContentPresenter Grid.Row="1" ContentSource="SelectedContent" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
         <Style TargetType="ComboBox">
             <Setter Property="Height" Value="36" />
@@ -140,32 +197,42 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Margin="18,18,18,14" Padding="24,20" Background="#143D43" CornerRadius="8">
+        <Border Grid.Row="0" Margin="18,12,18,10" Padding="20,14" Background="#143D43" CornerRadius="8">
             <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel>
-                    <TextBlock Text="{Binding Ui[ProductName]}" Foreground="White" FontSize="32" FontWeight="SemiBold" />
-                    <TextBlock Text="{Binding Ui[Subtitle]}" Foreground="#C8DBDE" FontSize="15" Margin="0,5,0,16" TextWrapping="Wrap" />
-                    <StackPanel Orientation="Horizontal">
-                        <Button Content="{Binding Ui[Refresh]}" Style="{StaticResource HeaderButton}" Click="RefreshButton_Click" />
-                        <Button Content="{Binding Ui[DisplaySettings]}" Style="{StaticResource HeaderButton}" Click="DisplaySettingsButton_Click" />
-                        <Button Content="{Binding Ui[ExportDiagnostic]}" Style="{StaticResource HeaderButton}" Click="ExportDiagnosticButton_Click" />
-                        <Button Content="{Binding Ui[ResetDisplayCache]}" Style="{StaticResource DangerHeaderButton}" Click="ResetDisplayCacheButton_Click" />
-                        <Button Content="{Binding Ui[AboutAuthor]}" Style="{StaticResource HeaderButton}" Click="AboutAuthorButton_Click" />
-                    </StackPanel>
+                    <TextBlock Text="{Binding Ui[ProductName]}" Foreground="White" FontSize="26" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding Ui[Subtitle]}" Foreground="#C8DBDE" FontSize="14" Margin="0,3,0,0" TextWrapping="Wrap" />
                 </StackPanel>
-                <StackPanel Grid.Column="1" VerticalAlignment="Top" Width="150">
-                    <TextBlock Text="{Binding Ui[Language]}" Foreground="#C8DBDE" Margin="0,0,0,5" />
-                    <ComboBox ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Ui[Language]}" Foreground="#C8DBDE" VerticalAlignment="Center" Margin="0,0,8,0" />
+                    <ComboBox Width="150" ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,10,0,0">
+                    <Button Content="{Binding Ui[Refresh]}" Style="{StaticResource HeaderButton}" Click="RefreshButton_Click" />
+                    <Button Content="{Binding Ui[DisplaySettings]}" Style="{StaticResource HeaderButton}" Click="DisplaySettingsButton_Click" />
+                    <Button Content="{Binding Ui[ExportDiagnostic]}" Style="{StaticResource HeaderButton}" Click="ExportDiagnosticButton_Click" />
+                    <Button Content="{Binding Ui[ResetDisplayCache]}" Style="{StaticResource DangerHeaderButton}" Click="ResetDisplayCacheButton_Click" />
+                    <Button Content="{Binding Ui[AboutAuthor]}" Style="{StaticResource HeaderButton}" Click="AboutAuthorButton_Click" />
                 </StackPanel>
             </Grid>
         </Border>
 
-        <TabControl Grid.Row="1" Margin="18,0" Background="Transparent" BorderThickness="0">
-            <TabItem Header="{Binding Ui[HomeTab]}">
+        <TabControl Grid.Row="1" Margin="18,0" Style="{StaticResource PrimaryNavigationTabControl}">
+            <TabItem Style="{StaticResource PrimaryNavigationTab}">
+                <TabItem.Header>
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding Ui[HomeTab]}" HorizontalAlignment="Center" />
+                        <TextBlock Text="{Binding Ui[HomeTabDescription]}" FontSize="12" FontWeight="Normal" Opacity="0.78" HorizontalAlignment="Center" />
+                    </StackPanel>
+                </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,12,0,0">
                     <StackPanel>
                 <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource OutlineBrush}" BorderThickness="1" CornerRadius="7" Padding="16" Margin="0,0,0,12">
@@ -244,7 +311,13 @@
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
-            <TabItem Header="{Binding Ui[SuperResolutionTab]}">
+            <TabItem Style="{StaticResource PrimaryNavigationTab}">
+                <TabItem.Header>
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding Ui[SuperResolutionTab]}" HorizontalAlignment="Center" />
+                        <TextBlock Text="{Binding Ui[SuperResolutionTabDescription]}" FontSize="12" FontWeight="Normal" Opacity="0.78" HorizontalAlignment="Center" />
+                    </StackPanel>
+                </TabItem.Header>
                 <Grid Margin="0,12,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="1.05*" MinWidth="420" />
@@ -305,7 +378,13 @@
                     </ScrollViewer>
                 </Grid>
             </TabItem>
-            <TabItem Header="{Binding Ui[ScalingTab]}">
+            <TabItem Style="{StaticResource PrimaryNavigationTab}">
+                <TabItem.Header>
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding Ui[ScalingTab]}" HorizontalAlignment="Center" />
+                        <TextBlock Text="{Binding Ui[ScalingTabDescription]}" FontSize="12" FontWeight="Normal" Opacity="0.78" HorizontalAlignment="Center" />
+                    </StackPanel>
+                </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,12,0,0">
                     <StackPanel>
                     <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource OutlineBrush}" BorderThickness="1" CornerRadius="7" Padding="18">

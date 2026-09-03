@@ -102,6 +102,9 @@ namespace WinSuperResolution.SmokeTests
             Assert(Strings.ForCulture("en-US")["HomeTab"] == "Home", "English home tab label is missing.");
             Assert(Strings.ForCulture("zh-CN")["SuperResolutionTab"] == "超分", "Chinese super-resolution tab label is missing.");
             Assert(Strings.ForCulture("ru-RU")["ScalingTab"] == "Масштабирование", "Russian scaling tab label is missing.");
+            Assert(Strings.ForCulture("en-US")["HomeTabDescription"] == "Compatibility and recovery", "English home tab description is missing.");
+            Assert(Strings.ForCulture("zh-CN")["ScalingTabDescription"] == "桌面分辨率与缩放", "Chinese scaling tab description is missing.");
+            Assert(Strings.ForCulture("ru-RU")["SuperResolutionTabDescription"] == "Конфигурации дисплея и виртуальные разрешения", "Russian super-resolution tab description is missing.");
             Assert(Strings.ForCulture("zh-CN")["CompatibilityGpuControlPanelWarning"].Contains("DSR"), "Chinese GPU control-panel warning is missing.");
             Assert(Strings.ForCulture("ru-RU")["CompatibilityScaleWarning"].Contains("масштаб Windows"), "Russian scale warning is missing.");
             Assert(Strings.ForCulture("unknown")["ProductName"] == "WinSuperResolution", "Unsupported cultures must fall back to English.");

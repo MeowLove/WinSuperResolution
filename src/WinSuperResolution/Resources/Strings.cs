@@ -29,8 +29,11 @@ namespace WinSuperResolution.Resources
         {
             IDictionary<string, string> english = CreateEnglish();
             english.Add("HomeTab", "Home");
+            english.Add("HomeTabDescription", "Compatibility and recovery");
             english.Add("SuperResolutionTab", "Super Resolution");
+            english.Add("SuperResolutionTabDescription", "Display configurations and virtual resolutions");
             english.Add("ScalingTab", "Scaling");
+            english.Add("ScalingTabDescription", "Desktop resolution and scaling");
             english["AboutAuthor"] = "About";
             AddCompatibilityStrings(english, "Environment and compatibility", "Unsupported", "Experimental", "Can try", "System", "Processor", "Active graphics", "Display path", "View details", "Select an active display to inspect its virtual desktop path.", "Windows did not report virtual desktop support for this active display path.", "The active display path supports virtual desktop modes, but its matched graphics driver is old or its date is unavailable.", "The active display path and its matched graphics driver meet the advisory checks.");
             english.Add("CompatibilityPathSupported", "Virtual desktop path: supported for {0}.");
@@ -49,8 +52,11 @@ namespace WinSuperResolution.Resources
             english.Add("UnexpectedError", "An unexpected error was recorded in the portable logs folder. No additional changes will be applied.");
             IDictionary<string, string> chinese = CreateChinese();
             chinese.Add("HomeTab", "首页");
+            chinese.Add("HomeTabDescription", "兼容与恢复");
             chinese.Add("SuperResolutionTab", "超分");
+            chinese.Add("SuperResolutionTabDescription", "显示配置与虚拟分辨率");
             chinese.Add("ScalingTab", "缩放");
+            chinese.Add("ScalingTabDescription", "桌面分辨率与缩放");
             chinese["AboutAuthor"] = "关于";
             AddCompatibilityStrings(chinese, "环境与兼容性", "不支持", "实验性", "可尝试", "系统", "处理器", "当前显示适配器", "显示路径", "查看详细依据", "请选择活动显示器以检查其虚拟桌面路径。", "Windows 未报告此活动显示路径支持虚拟桌面模式。", "活动显示路径支持虚拟桌面模式，但与其匹配的显卡驱动过旧或无法取得驱动日期。", "活动显示路径及其匹配的显卡驱动均通过了提示性检查。");
             chinese.Add("CompatibilityPathSupported", "虚拟桌面路径：{0} 已报告支持。");
@@ -69,8 +75,11 @@ namespace WinSuperResolution.Resources
             chinese.Add("UnexpectedError", "发生意外错误，已记录到便携日志目录。不会继续执行其他修改。" );
             IDictionary<string, string> russian = CreateRussian();
             russian.Add("HomeTab", "Главная");
+            russian.Add("HomeTabDescription", "Совместимость и восстановление");
             russian.Add("SuperResolutionTab", "Сверхразрешение");
+            russian.Add("SuperResolutionTabDescription", "Конфигурации дисплея и виртуальные разрешения");
             russian.Add("ScalingTab", "Масштабирование");
+            russian.Add("ScalingTabDescription", "Разрешение рабочего стола и масштабирование");
             russian["AboutAuthor"] = "О программе";
             AddCompatibilityStrings(russian, "Среда и совместимость", "Не поддерживается", "Экспериментально", "Можно попробовать", "Система", "Процессор", "Активный графический адаптер", "Путь дисплея", "Показать подробности", "Выберите активный дисплей для проверки его пути виртуального рабочего стола.", "Windows не сообщает о поддержке виртуального рабочего стола для этого активного пути дисплея.", "Активный путь дисплея поддерживает виртуальный рабочий стол, но драйвер соответствующего графического адаптера устарел или его дата недоступна.", "Активный путь дисплея и соответствующий графический драйвер проходят рекомендательные проверки.");
             russian.Add("CompatibilityPathSupported", "Путь виртуального рабочего стола: поддерживается для {0}.");
