@@ -524,7 +524,7 @@ namespace WinSuperResolution.ViewModels
         public string BuildDiagnosticSummary()
         {
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine("WinSuperResolution v3.1.0 diagnostic");
+            builder.AppendLine("WinSuperResolution v3.2.0 diagnostic");
             builder.AppendLine("Registered configuration roots: " + Records.Count);
             builder.AppendLine("Writable targets: " + CountTargets());
             foreach (DisplayConfigurationRecord record in Records)
