@@ -31,15 +31,15 @@ WinSuperResolution is created by **CXT**, also known as **MeowLove**.
 ### V3.3.0 screenshots
 
 <!-- V3.3_SCREENSHOT_1_START: Primary navigation and compact header -->
-<img width="3572" height="2193" alt="image" src="https://github.com/user-attachments/assets/3d2de574-d5ae-4f6b-9392-bc4f74fe29fe" />
+<img width="3964" height="2265" alt="image" src="https://github.com/user-attachments/assets/e978d94f-ce40-4307-8477-791a32db258c" />
 <!-- V3.3_SCREENSHOT_1_END -->
 
 <!-- V3.3_SCREENSHOT_2_START: Super Resolution recommended sequence and troubleshooting -->
-<img width="3572" height="2193" alt="image" src="https://github.com/user-attachments/assets/18fe3c72-b242-47e8-9dce-830e48b4ffcf" />
+<img width="3964" height="2265" alt="image" src="https://github.com/user-attachments/assets/d0b8397e-4c3c-45a4-8950-97f72d28960c" />
 <!-- V3.3_SCREENSHOT_2_END -->
 
 <!-- V3.3_SCREENSHOT_3_START: Scaling workflow and Windows Display Settings fallback -->
-<img width="3572" height="2193" alt="image" src="https://github.com/user-attachments/assets/41920600-d21a-4ed3-8657-6e1c0efe5467" />
+<img width="3964" height="2265" alt="image" src="https://github.com/user-attachments/assets/8f24f206-1688-47d8-8939-46c2f05d6832" />
 <!-- V3.3_SCREENSHOT_3_END -->
 
 ## Use Cases
