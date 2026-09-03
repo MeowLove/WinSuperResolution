@@ -350,6 +350,10 @@
                         <StackPanel>
                             <TextBlock Text="{Binding Ui[CapabilityPlan]}" Foreground="{StaticResource InkBrush}" FontSize="17" FontWeight="SemiBold" />
                             <TextBlock Text="{Binding SelectedSummary}" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,8,0,12" />
+                            <Separator Background="#E4EAED" />
+                            <TextBlock Text="{Binding Ui[RecommendedSequence]}" Foreground="{StaticResource InkBrush}" FontWeight="SemiBold" Margin="0,10,0,4" />
+                            <TextBlock Text="{Binding Ui[SuperResolutionWorkflow]}" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" />
+                            <Separator Background="#E4EAED" Margin="0,10,0,10" />
                             <StackPanel Margin="0,0,0,10">
                                 <DockPanel>
                                     <TextBlock Text="{Binding Ui[Magnification]}" VerticalAlignment="Center" Foreground="{StaticResource InkBrush}" />
@@ -373,6 +377,9 @@
                             <Border Background="#F1F7F8" BorderBrush="#BFD9DE" BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,14,0,0">
                                 <TextBlock Text="{Binding Ui[CapabilityWarning]}" Foreground="#315A62" TextWrapping="Wrap" />
                             </Border>
+                            <Expander Header="{Binding Ui[SuperResolutionTroubleshooting]}" Foreground="{StaticResource AccentBrush}" Margin="0,12,0,0">
+                                <TextBlock Text="{Binding Ui[SuperResolutionTroubleshootingDetails]}" Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                            </Expander>
                         </StackPanel>
                     </Border>
                     </ScrollViewer>
@@ -392,6 +399,7 @@
                             <TextBlock Text="{Binding Ui[CurrentState]}" Foreground="{StaticResource InkBrush}" FontSize="17" FontWeight="SemiBold" />
                             <TextBlock Text="{Binding CurrentStateSummary}" Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" Margin="0,8,0,4" />
                             <TextBlock Text="{Binding Ui[CurrentStateGuard]}" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding Ui[ScalingWorkflow]}" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,8,0,0" />
                             <Border Background="#FFF7ED" BorderBrush="#F1C48E" BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,10,0,0">
                                 <TextBlock Text="{Binding CompatibilityScaleWarning}" Foreground="#8A4A0B" TextWrapping="Wrap" />
                             </Border>
