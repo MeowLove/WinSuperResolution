@@ -11,7 +11,7 @@ WinSuperResolution helps Windows users configure a higher virtual desktop resolu
 WinSuperResolution is created by **CXT**, also known as **MeowLove**.
 
 - Website: [www.cxthhhhh.com](https://www.cxthhhhh.com/)
-- Version 2 release and introduction: [WinSuperResolution: Windows HiDPI-Style Scaling V2](https://www.cxthhhhh.com/2026/08/31/winsuperresolution-windows-hidpi-style-scaling-v2.html)
+- Version 3 introduction: [WinSuperResolution: Windows HiDPI-Style Scaling V3](https://www.cxthhhhh.com/2026/09/03/winsuperresolution-windows-hidpi-style-scaling-v3.html)
 
 <img width="256" height="256" alt="WinSuperResolution_Logo" src="https://github.com/user-attachments/assets/33560a97-8cd2-40d8-ae23-6dce05fd663e" />
 
@@ -124,7 +124,7 @@ To report a problem:
 
 Please include the WinSuperResolution version, Windows version/build, number of physical displays, connection type, and whether the issue persists after restarting Windows. Do not upload screenshots alone when a diagnostic package is available; the package contains the structured evidence needed to investigate display association and registry state.
 
-Diagnostic packages may contain application logs, operation journals, registry exports, existing registry backups, display-state snapshots, application settings, monitor identifiers, and local file paths. Review the ZIP before uploading and redact or remove anything you do not want to share. The package is created locally and is not uploaded automatically by the application.
+Diagnostic packages include `environment.txt` with Windows release evidence, detected adapters, installed GPU control-panel evidence, and a note that DSR or dynamic-resolution settings are not read. They also include `display-topology.txt` with display paths, monitor identities, connections, current modes and scales; and `operation-context.txt` with the latest capability plan, mutations, result, backup/journal paths, and restart state. The ZIP may also contain application logs, operation journals, registry exports, existing registry backups, display-state snapshots, application settings, monitor identifiers, and local file paths. Review the ZIP before uploading and redact or remove anything you do not want to share. The package is created locally and is not uploaded automatically by the application.
 
 If the display-association problem persists after exporting a diagnostic package, use **Reset display cache (final repair)** only as a last resort. After your confirmation, the application writes backups and a Journal first, deletes the Windows `GraphicsDrivers\\Configuration`, `Connectivity`, and `ScaleFactors` caches only after the backups succeed, then immediately restarts Windows so it can rebuild them. Save your work first; this resets display configuration for all monitors. A failed or partial reset does not request an automatic restart.
 

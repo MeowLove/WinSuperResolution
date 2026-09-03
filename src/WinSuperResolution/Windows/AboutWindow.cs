@@ -9,7 +9,7 @@ namespace WinSuperResolution.Windows
     internal sealed class AboutWindow : Window
     {
         private const string WebsiteUrl = "https://www.cxthhhhh.com/";
-        private const string IntroductionUrl = "https://www.cxthhhhh.com/2026/08/31/winsuperresolution-windows-hidpi-style-scaling-v2.html";
+        private const string IntroductionUrl = "https://www.cxthhhhh.com/2026/09/03/winsuperresolution-windows-hidpi-style-scaling-v3.html";
         private const string GitHubUrl = "https://github.com/MeowLove/WinSuperResolution";
 
         private static readonly Brush HeaderBrush = new SolidColorBrush(Color.FromRgb(20, 61, 67));

@@ -11,7 +11,7 @@ WinSuperResolution 用于配置更高的 Windows 虚拟桌面分辨率，并配�
 WinSuperResolution 由 **CXT** 创作，别名 **MeowLove**。
 
 - 网站：[www.cxthhhhh.com](https://www.cxthhhhh.com/)
-- V2 版本发布与介绍：[WinSuperResolution：Windows HiDPI 风格缩放 V2](https://www.cxthhhhh.com/2026/08/31/winsuperresolution-windows-hidpi-style-scaling-v2.html)
+- V3 版本介绍：[WinSuperResolution：Windows HiDPI 风格缩放 V3](https://www.cxthhhhh.com/2026/09/03/winsuperresolution-windows-hidpi-style-scaling-v3.html)
 
 <img width="256" height="256" alt="WinSuperResolution_Logo" src="https://github.com/user-attachments/assets/33560a97-8cd2-40d8-ae23-6dce05fd663e" />
 
@@ -123,7 +123,7 @@ Windows 报告的虚拟桌面显示路径是主要兼容性信号。旧显卡驱
 
 请同时提供 WinSuperResolution 版本、Windows 版本/内部版本号、实际显示器数量、连接方式，以及重启 Windows 后问题是否仍然存在。已有诊断包时，不要只提交截图；诊断包包含排查显示器关联和注册表状态所需的结构化信息。
 
-诊断包可能包含程序日志、操作日志、注册表导出、已有注册表备份、显示状态快照、程序设置、显示器标识和本地文件路径。上传前请检查 ZIP 内容，并删除或打码不希望公开的信息。诊断包只会在本地生成，程序不会自动上传。
+诊断包会包含 `environment.txt`，其中记录 Windows 发布版本证据、检测到的显卡、已安装显卡控制面板的证据，并明确不会读取 DSR 或动态分辨率等驱动设置；还会包含 `display-topology.txt`，记录显示路径、显示器标识、连接方式、当前模式与缩放；以及 `operation-context.txt`，记录最近一次能力计划、写入目标、操作结果、备份/Journal 路径和重启状态。ZIP 还可能包含程序日志、操作日志、注册表导出、已有注册表备份、显示状态快照、程序设置、显示器标识和本地文件路径。上传前请检查 ZIP 内容，并删除或打码不希望公开的信息。诊断包只会在本地生成，程序不会自动上传。
 
 如果导出诊断包后显示器关联问题仍然存在，最后再使用“清理显示缓存（最终修复）”。用户确认后，程序会先写入完整备份和 Journal，只有备份成功才删除 Windows 的 `GraphicsDrivers\\Configuration`、`Connectivity` 和 `ScaleFactors` 缓存，然后立即重启 Windows 让系统重新生成。操作前请保存工作；此操作会重置所有显示器的显示配置。清理失败或部分失败时不会自动重启。
 

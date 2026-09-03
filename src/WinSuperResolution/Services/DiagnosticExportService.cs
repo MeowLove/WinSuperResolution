@@ -16,6 +16,11 @@ namespace WinSuperResolution.Services
 
         internal DiagnosticExportResult Export(string summary)
         {
+            return Export(summary, null, null, null);
+        }
+
+        internal DiagnosticExportResult Export(string summary, string environmentEvidence, string displayTopologyEvidence, string operationContextEvidence)
+        {
             List<string> failures = new List<string>();
             string diagnosticsDirectory = Path.Combine(AppPaths.ExecutableDirectory, "diagnostics");
             string stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss-fff");
@@ -29,6 +34,9 @@ namespace WinSuperResolution.Services
                 Directory.CreateDirectory(stagingDirectory);
                 WriteText(stagingDirectory, "summary.txt", BuildSummary(summary, failures));
                 WriteText(stagingDirectory, "manifest.txt", BuildManifest());
+                WriteText(stagingDirectory, "environment.txt", BuildEnvironmentEvidence(environmentEvidence));
+                WriteText(stagingDirectory, "display-topology.txt", displayTopologyEvidence ?? "No display-topology evidence was supplied." + Environment.NewLine);
+                WriteText(stagingDirectory, "operation-context.txt", operationContextEvidence ?? "No operation-context evidence was supplied." + Environment.NewLine);
                 CopyOptionalFile(AppPaths.SettingsPath, stagingDirectory, "application-settings.json", failures);
                 CopyOptionalFile(Path.Combine(AppPaths.LogsDirectory, "WinSuperResolution.log"), stagingDirectory, "logs/WinSuperResolution.log", failures);
                 CopyOptionalDirectory(AppPaths.JournalsDirectory, stagingDirectory, "journals", failures);
@@ -86,6 +94,9 @@ namespace WinSuperResolution.Services
             writer.WriteLine();
             writer.WriteLine("Included artifacts:");
             writer.WriteLine("- manifest.txt");
+            writer.WriteLine("- environment.txt");
+            writer.WriteLine("- display-topology.txt");
+            writer.WriteLine("- operation-context.txt");
             writer.WriteLine("- application-settings.json (when available)");
             writer.WriteLine("- logs/WinSuperResolution.log (when available)");
             writer.WriteLine("- journals/, registry-backups/, display-state/ (when available)");
@@ -101,6 +112,47 @@ namespace WinSuperResolution.Services
                     writer.WriteLine("- " + failure);
             }
             return writer.ToString();
+        }
+
+        private static string BuildEnvironmentEvidence(string environmentEvidence)
+        {
+            StringWriter writer = new StringWriter();
+            writer.WriteLine("WinSuperResolution environment evidence");
+            writer.WriteLine("Generated: " + DateTimeOffset.Now.ToString("o"));
+            writer.WriteLine();
+            writer.WriteLine("Windows release evidence:");
+            try
+            {
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", false))
+                {
+                    WriteRegistryValue(writer, key, "ProductName");
+                    WriteRegistryValue(writer, key, "DisplayVersion");
+                    WriteRegistryValue(writer, key, "ReleaseId");
+                    WriteRegistryValue(writer, key, "CurrentBuildNumber");
+                    WriteRegistryValue(writer, key, "UBR");
+                    WriteRegistryValue(writer, key, "BuildLabEx");
+                    WriteRegistryValue(writer, key, "EditionID");
+                }
+            }
+            catch (Exception exception)
+            {
+                writer.WriteLine("Windows release evidence unavailable: " + exception.Message);
+            }
+            writer.WriteLine();
+            writer.WriteLine("Compatibility snapshot:");
+            writer.Write(environmentEvidence ?? "No compatibility evidence was supplied." + Environment.NewLine);
+            return writer.ToString();
+        }
+
+        private static void WriteRegistryValue(TextWriter writer, RegistryKey key, string valueName)
+        {
+            if (key == null)
+            {
+                writer.WriteLine(valueName + ": unavailable");
+                return;
+            }
+            object value = key.GetValue(valueName, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
+            writer.WriteLine(valueName + ": " + (value == null ? "unavailable" : Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture)));
         }
 
         private static void CopyOptionalDirectory(string sourceDirectory, string stagingDirectory, string packageDirectory, IList<string> failures)

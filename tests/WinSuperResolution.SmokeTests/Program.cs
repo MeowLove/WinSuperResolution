@@ -266,20 +266,37 @@ namespace WinSuperResolution.SmokeTests
             DiagnosticExportResult result = null;
             try
             {
-                result = new DiagnosticExportService().Export("diagnostic export smoke test");
+                result = new DiagnosticExportService().Export("diagnostic export smoke test", "environment smoke evidence", "display topology smoke evidence", "operation context smoke evidence");
                 Assert(result.Succeeded, "Diagnostic export should produce an archive.");
                 using (ZipArchive archive = ZipFile.OpenRead(result.ArchivePath))
                 {
                     bool found = false;
+                    bool environmentFound = false;
+                    bool topologyFound = false;
+                    bool operationContextFound = false;
                     foreach (ZipArchiveEntry entry in archive.Entries)
                     {
                         if (entry.FullName == "registry-backups/" + fileName)
                         {
                             found = true;
-                            break;
+                        }
+                        if (entry.FullName == "environment.txt")
+                        {
+                            environmentFound = ReadArchiveEntry(entry).Contains("environment smoke evidence");
+                        }
+                        if (entry.FullName == "display-topology.txt")
+                        {
+                            topologyFound = ReadArchiveEntry(entry).Contains("display topology smoke evidence");
+                        }
+                        if (entry.FullName == "operation-context.txt")
+                        {
+                            operationContextFound = ReadArchiveEntry(entry).Contains("operation context smoke evidence");
                         }
                     }
                     Assert(found, "Diagnostic export must include long-named registry backup files.");
+                    Assert(environmentFound, "Diagnostic export must include structured environment evidence.");
+                    Assert(topologyFound, "Diagnostic export must include structured display-topology evidence.");
+                    Assert(operationContextFound, "Diagnostic export must include structured operation-context evidence.");
                 }
             }
             finally
@@ -289,6 +306,12 @@ namespace WinSuperResolution.SmokeTests
                 if (result != null && File.Exists(result.ArchivePath))
                     File.Delete(result.ArchivePath);
             }
+        }
+
+        private static string ReadArchiveEntry(ZipArchiveEntry entry)
+        {
+            using (StreamReader reader = new StreamReader(entry.Open()))
+                return reader.ReadToEnd();
         }
 
         private static void TestDisplayIdentityIncludesDeviceName()

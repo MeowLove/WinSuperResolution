@@ -22,6 +22,7 @@ namespace WinSuperResolution.ViewModels
         private readonly DisplayCacheResetService _displayCacheResetService;
         private readonly EnvironmentCompatibilityService _environmentCompatibilityService;
         private readonly VirtualDesktopModeService _virtualDesktopModes;
+        private readonly List<ResolutionPlan> _lastCapabilityPlans;
         private DisplayConfigurationRecord _selectedRecord;
         private DisplayMode _selectedMode;
         private int _selectedScalePercent;
@@ -56,6 +57,7 @@ namespace WinSuperResolution.ViewModels
             Records = new ObservableCollection<DisplayConfigurationRecord>();
             CurrentModes = new ObservableCollection<DisplayMode>();
             AvailableScalePercentages = new ObservableCollection<int>();
+            _lastCapabilityPlans = new List<ResolutionPlan>();
             Languages = Strings.SupportedCultures;
             _selectedMagnification = 150;
             _selectedLanguage = _settingsService.LoadLanguage();
@@ -428,6 +430,7 @@ namespace WinSuperResolution.ViewModels
             try
             {
                 ResolutionPlan plan = BuildSelectedPlan();
+                RememberCapabilityPlans(new[] { plan });
                 PlanSummary = DescribePlan(plan) + " " + Ui["PreviewOnly"];
                 StatusText = Ui["PlanBuilt"];
             }
@@ -443,7 +446,9 @@ namespace WinSuperResolution.ViewModels
         {
             try
             {
-                return RecordLocalizedResult(_capabilityService.Apply(BuildSelectedPlan()), "CapabilityApplied", "CapabilityFailed");
+                ResolutionPlan plan = BuildSelectedPlan();
+                RememberCapabilityPlans(new[] { plan });
+                return RecordLocalizedResult(_capabilityService.Apply(plan), "CapabilityApplied", "CapabilityFailed");
             }
             catch (Exception exception)
             {
@@ -454,7 +459,9 @@ namespace WinSuperResolution.ViewModels
 
         public IList<ResolutionPlan> GetSelectedCapabilityPreview()
         {
-            return new List<ResolutionPlan> { BuildSelectedPlan() };
+            ResolutionPlan plan = BuildSelectedPlan();
+            RememberCapabilityPlans(new[] { plan });
+            return new List<ResolutionPlan> { plan };
         }
 
         public OperationResult ApplyAllCapabilities()
@@ -467,6 +474,7 @@ namespace WinSuperResolution.ViewModels
                     if (record.CanApplyVirtualCapability)
                         plans.Add(_planService.Build(record, SelectedMagnification));
                 }
+                RememberCapabilityPlans(plans);
                 return RecordLocalizedResult(_capabilityService.ApplyBatch(plans), "CapabilityApplied", "CapabilityFailed");
             }
             catch (Exception exception)
@@ -484,6 +492,7 @@ namespace WinSuperResolution.ViewModels
                 if (record.CanApplyVirtualCapability)
                     plans.Add(_planService.Build(record, SelectedMagnification));
             }
+            RememberCapabilityPlans(plans);
             return plans;
         }
 
@@ -549,7 +558,11 @@ namespace WinSuperResolution.ViewModels
 
         internal DiagnosticExportResult ExportDiagnosticPackage()
         {
-            DiagnosticExportResult result = _diagnosticExportService.Export(BuildDiagnosticSummary());
+            DiagnosticExportResult result = _diagnosticExportService.Export(
+                BuildDiagnosticSummary(),
+                BuildDiagnosticEnvironmentEvidence(),
+                BuildDiagnosticDisplayTopologyEvidence(),
+                BuildDiagnosticOperationContextEvidence());
             _lastDiagnosticExport = result;
             if (result.Succeeded)
             {
@@ -572,6 +585,116 @@ namespace WinSuperResolution.ViewModels
         private ResolutionPlan BuildSelectedPlan()
         {
             return _planService.Build(SelectedRecord, SelectedMagnification);
+        }
+
+        private void RememberCapabilityPlans(IEnumerable<ResolutionPlan> plans)
+        {
+            _lastCapabilityPlans.Clear();
+            if (plans == null)
+                return;
+            foreach (ResolutionPlan plan in plans)
+            {
+                if (plan != null)
+                    _lastCapabilityPlans.Add(plan);
+            }
+        }
+
+        private string BuildDiagnosticEnvironmentEvidence()
+        {
+            StringBuilder builder = new StringBuilder();
+            EnvironmentCompatibilitySnapshot compatibility = _environmentCompatibilityService.Inspect(SelectedRecord, _virtualDesktopModes);
+            builder.AppendLine("Current selected configuration: " + (SelectedRecord == null ? "none" : SelectedRecord.ConfigurationKey));
+            AppendDiagnosticValue(builder, "Compatibility status", compatibility.Status.ToString());
+            AppendDiagnosticValue(builder, "Compatibility reason", compatibility.Reason);
+            AppendDiagnosticValue(builder, "Windows", compatibility.WindowsSummary);
+            AppendDiagnosticValue(builder, "Processor", compatibility.ProcessorSummary);
+            AppendDiagnosticValue(builder, "Selected display", compatibility.SelectedDisplaySummary);
+            AppendDiagnosticValue(builder, "Active graphics adapter", compatibility.GraphicsSummary);
+            AppendDiagnosticValue(builder, "Other graphics adapters", compatibility.OtherGraphicsSummary);
+            AppendDiagnosticValue(builder, "All detected graphics adapters", compatibility.DetectedGraphicsSummary);
+            AppendDiagnosticValue(builder, "GPU control panels", compatibility.GpuControlPanelSummary);
+            builder.AppendLine("GPU control-panel detection scope: installed application display names from HKLM/HKCU 32-bit and 64-bit uninstall registry views; driver settings such as DSR are not read.");
+            builder.AppendLine("Active adapter matched: " + compatibility.ActiveAdapterMatched);
+            builder.AppendLine("Driver old or unknown: " + compatibility.HasOldOrUnknownDriver);
+            AppendDiagnosticValue(builder, "Display path", compatibility.PathSummary);
+            return builder.ToString();
+        }
+
+        private string BuildDiagnosticDisplayTopologyEvidence()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine("Registered configuration roots: " + Records.Count);
+            builder.AppendLine("Selected configuration: " + (SelectedRecord == null ? "none" : SelectedRecord.ConfigurationKey));
+            foreach (DisplayConfigurationRecord record in Records)
+            {
+                builder.AppendLine();
+                builder.AppendLine("Configuration: " + record.ConfigurationKey);
+                builder.AppendLine("  Validation=" + record.ValidationStatus + " | Connection=" + record.ConnectionStatus + " | Match=" + record.MatchStatus + " | DuplicateCandidates=" + record.DuplicateCandidateCount + " | SupersededByExact=" + record.SupersededByExactMatch);
+                builder.AppendLine("  PrimarySurface=" + record.PrimarySurfaceText + " | ActiveSignal=" + record.ActiveSignalText);
+                if (record.LiveDisplay == null)
+                {
+                    builder.AppendLine("  Live display: unavailable");
+                }
+                else
+                {
+                    LiveDisplayInfo display = record.LiveDisplay;
+                    builder.AppendLine("  Live display: device=" + display.DeviceName + " | monitorId=" + display.MonitorDeviceId + " | monitorKey=" + display.MonitorDeviceKey + " | devicePath=" + display.MonitorDevicePath);
+                    builder.AppendLine("  EDID=" + display.EdidManufacturer + ":" + display.EdidProductCode + " | adapter=" + display.AdapterName + " | connection=" + display.ConnectionTechnology);
+                    builder.AppendLine("  Current mode=" + display.CurrentModeText + " | Current scale=" + display.ScaleText);
+                    AppendDiagnosticValue(builder, "  Topology evidence", display.TopologyEvidence);
+                }
+                foreach (RegistryTarget target in record.RegistryTargets)
+                    builder.AppendLine("  Registry target: " + target.RelativePath + " | primary=" + target.PrimarySurfaceWidth + "x" + target.PrimarySurfaceHeight + " | active=" + target.ActiveSignalWidth + "x" + target.ActiveSignalHeight);
+                AppendDiagnosticValue(builder, "  Correlation evidence", record.CorrelationEvidence);
+                AppendDiagnosticValue(builder, "  Scan warning", record.ScanWarning);
+            }
+            builder.AppendLine();
+            builder.AppendLine("Modes enumerated for the current selection:");
+            foreach (DisplayMode mode in CurrentModes)
+                builder.AppendLine("- " + mode.Width + "x" + mode.Height + " @ " + mode.Frequency + "Hz | current=" + mode.IsCurrent + " | virtualDesktop=" + mode.IsVirtualDesktopMode);
+            builder.AppendLine("Available scale percentages: " + string.Join(", ", AvailableScalePercentages));
+            return builder.ToString();
+        }
+
+        private string BuildDiagnosticOperationContextEvidence()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine("Selected configuration: " + (SelectedRecord == null ? "none" : SelectedRecord.ConfigurationKey));
+            builder.AppendLine("Selected magnification: " + SelectedMagnification + "%");
+            AppendDiagnosticValue(builder, "Plan presentation", PlanSummary);
+            builder.AppendLine("Last successfully generated capability plan count: " + _lastCapabilityPlans.Count);
+            foreach (ResolutionPlan plan in _lastCapabilityPlans)
+            {
+                builder.AppendLine("Plan: configuration=" + (plan.Record == null ? "unknown" : plan.Record.ConfigurationKey) + " | " + plan.Summary);
+                foreach (RegistryMutation mutation in plan.Mutations)
+                    builder.AppendLine("  Mutation: " + mutation.RelativePath + " | " + mutation.OriginalWidth + "x" + mutation.OriginalHeight + " -> " + mutation.TargetWidth + "x" + mutation.TargetHeight);
+            }
+            if (_lastLocalizedOperation == null)
+            {
+                builder.AppendLine("Latest operation: none recorded in this session.");
+            }
+            else
+            {
+                builder.AppendLine("Latest operation succeeded: " + _lastLocalizedOperation.Succeeded);
+                builder.AppendLine("Latest operation restart required: " + _lastLocalizedOperation.RestartRequired);
+                AppendDiagnosticValue(builder, "Latest operation backup path", _lastLocalizedOperation.BackupPath);
+                AppendDiagnosticValue(builder, "Latest operation journal path", _lastLocalizedOperation.JournalPath);
+                AppendDiagnosticValue(builder, "Latest operation result", _lastLocalizedOperation.Message);
+            }
+            AppendDiagnosticValue(builder, "Current mode availability", CurrentModeAvailability);
+            AppendDiagnosticValue(builder, "Current scale availability", ScaleAvailability);
+            return builder.ToString();
+        }
+
+        private static void AppendDiagnosticValue(StringBuilder builder, string label, string value)
+        {
+            builder.Append(label).Append(": ");
+            if (string.IsNullOrEmpty(value))
+            {
+                builder.AppendLine("unavailable");
+                return;
+            }
+            builder.AppendLine(value.Replace("\r", " ").Replace("\n", " | "));
         }
 
         private OperationResult RecordLocalizedResult(OperationResult result, string successKey, string failureKey)
