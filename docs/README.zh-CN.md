@@ -15,7 +15,7 @@ WinSuperResolution 由 **CXT** 创作，别名 **MeowLove**。
 
 <img width="256" height="256" alt="WinSuperResolution_Logo" src="https://github.com/user-attachments/assets/33560a97-8cd2-40d8-ae23-6dce05fd663e" />
 
-## V3.2.0 更新
+## V3.3.0 更新
 
 - 在已注册显示配置列表上方新增“环境与兼容性”板块，展示所选活动显示路径、与其精确匹配的显示适配器、驱动版本与日期；其它检测到的适配器在展开的依据中逐项显示。
 - 以红色“**不支持**”、黄色“**实验性**”、绿色“**可尝试**”提示已观察到的支持证据与驱动新鲜度。这些状态仅用于风险提示，不会屏蔽既有功能。
@@ -24,6 +24,23 @@ WinSuperResolution 由 **CXT** 创作，别名 **MeowLove**。
 - 以紧凑的“已安装/未安装”状态显示 NVIDIA Control Panel、AMD Software/Adrenalin 和 Intel Arc Control；详细信息放在兼容性依据中展开查看。
 - 将 Windows 缩放提示移至当前桌面状态板块，并改用更稳健的表述，因为实际结果取决于当前显示路径和所选模式。
 - 将主工作区拆分为“首页”“超分”“缩放”三个选项卡，让低分辨率屏幕无需同时容纳所有功能板块。
+- 将三个主工作区升级为等宽的编号导航，并在名称下标明用途；同时压缩头部高度，释放更多功能区空间。
+- 新增推荐的超分操作顺序：应用计划、重启 Windows、必要时刷新，再通过本程序或 Windows“显示设置”配置分辨率与缩放。
+- 新增默认收起的排障指引，将“清理显示缓存”定位为最终修复，并明确说明该操作会备份、清理 Windows 显示缓存后立即重启电脑。
+
+### V3.3.0 截图
+
+<!-- V3.3_SCREENSHOT_1_START: 主导航与紧凑头部 -->
+<!-- 请以主导航与紧凑头部截图替换此标记。 -->
+<!-- V3.3_SCREENSHOT_1_END -->
+
+<!-- V3.3_SCREENSHOT_2_START: 超分推荐流程与排障 -->
+<!-- 请以超分页操作流程与排障截图替换此标记。 -->
+<!-- V3.3_SCREENSHOT_2_END -->
+
+<!-- V3.3_SCREENSHOT_3_START: 缩放流程与 Windows 显示设置替代路径 -->
+<!-- 请以缩放页操作流程截图替换此标记。 -->
+<!-- V3.3_SCREENSHOT_3_END -->
 
 ## 适用场景
 
@@ -131,7 +148,7 @@ Windows 报告的虚拟桌面显示路径是主要兼容性信号。旧显卡驱
 
 ```powershell
 .\scripts\Build-Release.ps1
-.\scripts\Package-Release.ps1 -Version 3.2.0
+.\scripts\Package-Release.ps1 -Version 3.3.0
 ```
 
 编译脚本会使用 .NET Framework MSBuild 重建 `Release|x64`，并运行 Smoke Tests。打包脚本会从已验证的 EXE 和公开文档生成 `deliverables/WinSuperResolution-v<version>-win-x64.zip` 及其 SHA-256 文件；它不会上传 GitHub Release。

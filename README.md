@@ -15,7 +15,7 @@ WinSuperResolution is created by **CXT**, also known as **MeowLove**.
 
 <img width="256" height="256" alt="WinSuperResolution_Logo" src="https://github.com/user-attachments/assets/33560a97-8cd2-40d8-ae23-6dce05fd663e" />
 
-## Version 3.2.0
+## Version 3.3.0
 
 - Adds the **Environment and compatibility** panel above the registered display list. It reports the selected active display path, its exactly matched graphics adapter, driver version and driver date, plus other detected adapters in expandable evidence.
 - Uses advisory-only red (**Unsupported**), yellow (**Experimental**), and green (**Can try**) states. These communicate observed support evidence and driver freshness; they never block an existing feature.
@@ -24,6 +24,23 @@ WinSuperResolution is created by **CXT**, also known as **MeowLove**.
 - Shows a compact installed/not-installed status for NVIDIA Control Panel, AMD Software/Adrenalin, and Intel Arc Control, with details available in the compatibility evidence.
 - Moves the Windows scaling advisory into the current desktop state panel and uses cautious wording because the exact result depends on the active display path and selected mode.
 - Splits the main workspace into Home, Super Resolution, and Scaling tabs so lower-resolution screens can use each workflow without fitting every panel at once.
+- Promotes the three primary workspaces into equal-width, numbered navigation with a concise purpose under each label, and compacts the header to recover vertical workspace.
+- Adds a recommended super-resolution sequence: apply the plan, restart Windows, refresh when necessary, then use either this program or Windows Display Settings to configure resolution and scaling.
+- Adds an expandable troubleshooting guide that positions Clear display cache as a final repair only. It explains that the operation creates a backup, clears Windows display caches, and restarts the computer immediately.
+
+### V3.3.0 screenshots
+
+<!-- V3.3_SCREENSHOT_1_START: Primary navigation and compact header -->
+<!-- Replace this marker with the primary navigation and compact-header screenshot. -->
+<!-- V3.3_SCREENSHOT_1_END -->
+
+<!-- V3.3_SCREENSHOT_2_START: Super Resolution recommended sequence and troubleshooting -->
+<!-- Replace this marker with the Super Resolution workflow and troubleshooting screenshot. -->
+<!-- V3.3_SCREENSHOT_2_END -->
+
+<!-- V3.3_SCREENSHOT_3_START: Scaling workflow and Windows Display Settings fallback -->
+<!-- Replace this marker with the Scaling workflow screenshot. -->
+<!-- V3.3_SCREENSHOT_3_END -->
 
 ## Use Cases
 
@@ -133,7 +150,7 @@ For a verified local release, run:
 
 ```powershell
 .\scripts\Build-Release.ps1
-.\scripts\Package-Release.ps1 -Version 3.2.0
+.\scripts\Package-Release.ps1 -Version 3.3.0
 ```
 
 The build script rebuilds `Release|x64` with .NET Framework MSBuild and runs the smoke tests. The package script creates `deliverables/WinSuperResolution-v<version>-win-x64.zip` and its SHA-256 file from the verified executable and public documentation. It does not upload a GitHub Release.
