@@ -192,7 +192,7 @@ namespace WinSuperResolution.ViewModels
             get
             {
                 return _compatibility == null || string.IsNullOrEmpty(_compatibility.GpuControlPanelSummary)
-                    ? Ui["CompatibilityNoGpuControlPanels"]
+                    ? Ui["CompatibilityGpuControlPanelNoWarning"]
                     : _compatibility.GpuControlPanelSummary;
             }
         }
@@ -202,7 +202,7 @@ namespace WinSuperResolution.ViewModels
             get
             {
                 if (_compatibility == null || string.IsNullOrEmpty(_compatibility.GpuControlPanelSummary))
-                    return Ui["CompatibilityGpuControlPanelNoWarning"];
+                    return string.Empty;
                 return string.Format(Ui["CompatibilityGpuControlPanelWarning"], _compatibility.GpuControlPanelSummary);
             }
         }

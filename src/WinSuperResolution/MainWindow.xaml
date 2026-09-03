@@ -196,6 +196,7 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Row="0" Text="{Binding Ui[CompatibilitySystem]}" Foreground="{StaticResource MutedBrush}" />
                             <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding CompatibilitySystem}" Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding CompatibilitySystem}" />
@@ -203,11 +204,9 @@
                             <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding CompatibilityProcessor}" Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding CompatibilityProcessor}" Margin="0,3,0,0" />
                             <TextBlock Grid.Row="2" Text="{Binding Ui[CompatibilityGraphics]}" Foreground="{StaticResource MutedBrush}" Margin="0,3,0,0" />
                             <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding CompatibilityGraphics}" Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding CompatibilityGraphics}" Margin="0,3,0,0" />
+                            <TextBlock Grid.Row="3" Text="{Binding Ui[CompatibilityGpuControlPanels]}" Foreground="{StaticResource MutedBrush}" Margin="0,3,0,0" />
+                            <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding CompatibilityGpuControlPanels}" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,3,0,0" />
                         </Grid>
-                        <DockPanel Margin="0,8,0,0">
-                            <TextBlock Text="{Binding Ui[CompatibilityGpuControlPanels]}" Foreground="{StaticResource MutedBrush}" />
-                            <TextBlock DockPanel.Dock="Right" Text="{Binding CompatibilityGpuControlPanels}" Foreground="{StaticResource InkBrush}" FontWeight="SemiBold" />
-                        </DockPanel>
                         <Expander Header="{Binding Ui[CompatibilityDetails]}" Foreground="{StaticResource AccentBrush}" Margin="0,8,0,0">
                             <Grid Margin="0,6,0,0">
                                 <Grid.ColumnDefinitions>
@@ -236,7 +235,7 @@
                                 <TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding CompatibilityOtherGraphics}" Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
                                 <TextBlock Grid.Row="5" Text="{Binding Ui[CompatibilityGpuControlPanels]}" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0" />
                                 <TextBlock Grid.Row="5" Grid.Column="2" Text="{Binding CompatibilityGpuControlPanelDetails}" Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
-                                <TextBlock Grid.Row="6" Grid.ColumnSpan="3" Text="{Binding CompatibilityGpuControlPanelWarning}" Foreground="#8A4A0B" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                <TextBlock Grid.Row="6" Grid.ColumnSpan="3" Text="{Binding CompatibilityGpuControlPanelWarning}" Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
                             </Grid>
                         </Expander>
                     </StackPanel>
