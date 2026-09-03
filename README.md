@@ -31,15 +31,15 @@ WinSuperResolution is created by **CXT**, also known as **MeowLove**.
 ### V3.3.0 screenshots
 
 <!-- V3.3_SCREENSHOT_1_START: Primary navigation and compact header -->
-<!-- Replace this marker with the primary navigation and compact-header screenshot. -->
+<img width="3572" height="2193" alt="image" src="https://github.com/user-attachments/assets/3d2de574-d5ae-4f6b-9392-bc4f74fe29fe" />
 <!-- V3.3_SCREENSHOT_1_END -->
 
 <!-- V3.3_SCREENSHOT_2_START: Super Resolution recommended sequence and troubleshooting -->
-<!-- Replace this marker with the Super Resolution workflow and troubleshooting screenshot. -->
+<img width="3572" height="2193" alt="image" src="https://github.com/user-attachments/assets/18fe3c72-b242-47e8-9dce-830e48b4ffcf" />
 <!-- V3.3_SCREENSHOT_2_END -->
 
 <!-- V3.3_SCREENSHOT_3_START: Scaling workflow and Windows Display Settings fallback -->
-<!-- Replace this marker with the Scaling workflow screenshot. -->
+<img width="3572" height="2193" alt="image" src="https://github.com/user-attachments/assets/41920600-d21a-4ed3-8657-6e1c0efe5467" />
 <!-- V3.3_SCREENSHOT_3_END -->
 
 ## Use Cases
