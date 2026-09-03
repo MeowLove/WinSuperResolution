@@ -15,12 +15,14 @@ WinSuperResolution 由 **CXT** 创作，别名 **MeowLove**。
 
 <img width="256" height="256" alt="WinSuperResolution_Logo" src="https://github.com/user-attachments/assets/33560a97-8cd2-40d8-ae23-6dce05fd663e" />
 
-## V2.5 更新
+## V3.1.0 更新
 
 - 在已注册显示配置列表上方新增“环境与兼容性”板块，展示所选活动显示路径、与其精确匹配的显示适配器、驱动版本与日期；其它检测到的适配器在展开的依据中逐项显示。
 - 以红色“**不支持**”、黄色“**实验性**”、绿色“**可尝试**”提示已观察到的支持证据与驱动新鲜度。这些状态仅用于风险提示，不会屏蔽既有功能。
 - 新增程序内“**关于**”窗口，集中展示产品版本、作者信息，以及官网、介绍页面和 GitHub 仓库的独立链接。
 - 主窗口标题栏自动显示程序集版本，便于用户反馈和诊断包定位正在运行的版本。
+- 以紧凑的“已安装/未安装”状态显示 NVIDIA Control Panel、AMD Software/Adrenalin 和 Intel Arc Control；详细信息放在兼容性依据中展开查看。
+- 将 Windows 缩放提示移至当前桌面状态板块，并改用更稳健的表述，因为实际结果取决于当前显示路径和所选模式。
 
 ## 适用场景
 
@@ -128,7 +130,7 @@ Windows 报告的虚拟桌面显示路径是主要兼容性信号。旧显卡驱
 
 ```powershell
 .\scripts\Build-Release.ps1
-.\scripts\Package-Release.ps1 -Version 2.5.0
+.\scripts\Package-Release.ps1 -Version 3.1.0
 ```
 
 编译脚本会使用 .NET Framework MSBuild 重建 `Release|x64`，并运行 Smoke Tests。打包脚本会从已验证的 EXE 和公开文档生成 `deliverables/WinSuperResolution-v<version>-win-x64.zip` 及其 SHA-256 文件；它不会上传 GitHub Release。

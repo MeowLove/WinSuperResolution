@@ -96,6 +96,11 @@ namespace WinSuperResolution.SmokeTests
             Assert(Strings.ForCulture("en-US")["CompatibilityOtherGraphics"] == "Other detected adapters", "English compatibility detail label is missing.");
             Assert(Strings.ForCulture("zh-CN")["CompatibilityDriverFreshness"] == "驱动新鲜度", "Chinese compatibility detail label is missing.");
             Assert(Strings.ForCulture("ru-RU")["CompatibilityAdapterAssociation"] == "Связь с адаптером", "Russian compatibility detail label is missing.");
+            Assert(Strings.ForCulture("en-US")["CompatibilityGpuControlPanels"] == "GPU control panel", "English GPU control-panel label is missing.");
+            Assert(Strings.ForCulture("zh-CN")["CompatibilityGpuControlPanelInstalled"] == "已安装", "Chinese GPU control-panel installed status is missing.");
+            Assert(Strings.ForCulture("ru-RU")["CompatibilityGpuControlPanelNotInstalled"] == "Не установлена", "Russian GPU control-panel not-installed status is missing.");
+            Assert(Strings.ForCulture("zh-CN")["CompatibilityGpuControlPanelWarning"].Contains("DSR"), "Chinese GPU control-panel warning is missing.");
+            Assert(Strings.ForCulture("ru-RU")["CompatibilityScaleWarning"].Contains("масштаб Windows"), "Russian scale warning is missing.");
             Assert(Strings.ForCulture("unknown")["ProductName"] == "WinSuperResolution", "Unsupported cultures must fall back to English.");
         }
 

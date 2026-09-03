@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Management;
 using System.Text;
+using Microsoft.Win32;
 using WinSuperResolution.Models;
 
 namespace WinSuperResolution.Services
@@ -74,6 +75,7 @@ namespace WinSuperResolution.Services
             }
 
             snapshot.DetectedGraphicsSummary = JoinAdapters(adapters);
+            snapshot.GpuControlPanelSummary = DetectGpuControlPanels();
             if (liveDisplay == null)
             {
                 snapshot.GraphicsSummary = snapshot.DetectedGraphicsSummary;
@@ -97,6 +99,60 @@ namespace WinSuperResolution.Services
             snapshot.DriverDate = activeAdapter.DriverDate;
             snapshot.HasOldOrUnknownDriver = IsOldOrUnknown(activeAdapter);
             return snapshot;
+        }
+
+        private static string DetectGpuControlPanels()
+        {
+            List<string> matches = new List<string>();
+            RegistryView[] views = new[] { RegistryView.Registry64, RegistryView.Registry32 };
+            RegistryHive[] hives = new[] { RegistryHive.LocalMachine, RegistryHive.CurrentUser };
+            foreach (RegistryHive hive in hives)
+            {
+                foreach (RegistryView view in views)
+                {
+                    try
+                    {
+                        using (RegistryKey baseKey = RegistryKey.OpenBaseKey(hive, view))
+                        using (RegistryKey uninstall = baseKey.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"))
+                        {
+                            if (uninstall == null)
+                                continue;
+                            foreach (string subKeyName in uninstall.GetSubKeyNames())
+                            {
+                                using (RegistryKey app = uninstall.OpenSubKey(subKeyName))
+                                {
+                                    string displayName = app == null ? null : app.GetValue("DisplayName") as string;
+                                    if (IsGpuControlPanel(displayName) && !ContainsIgnoreCase(matches, displayName))
+                                        matches.Add(displayName.Trim());
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // Software inventory is advisory; inaccessible registry views are ignored.
+                    }
+                }
+            }
+            return string.Join("; ", matches.ToArray());
+        }
+
+        private static bool IsGpuControlPanel(string displayName)
+        {
+            if (string.IsNullOrEmpty(displayName))
+                return false;
+            string value = displayName.ToLowerInvariant();
+            return value.Contains("nvidia control panel") || value.Contains("amd software") || value.Contains("adrenalin") || value.Contains("intel arc control");
+        }
+
+        private static bool ContainsIgnoreCase(IEnumerable<string> values, string candidate)
+        {
+            foreach (string value in values)
+            {
+                if (string.Equals(value, candidate, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
         }
 
         private static GraphicsAdapterInfo FindActiveAdapter(IEnumerable<GraphicsAdapterInfo> adapters, string adapterName)
@@ -209,5 +265,6 @@ namespace WinSuperResolution.Services
         internal DateTime? DriverDate { get; set; }
         internal bool ActiveAdapterMatched { get; set; }
         internal bool HasOldOrUnknownDriver { get; set; }
+        internal string GpuControlPanelSummary { get; set; }
     }
 }

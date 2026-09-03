@@ -177,6 +177,46 @@ namespace WinSuperResolution.ViewModels
             }
         }
 
+        public string CompatibilityGpuControlPanels
+        {
+            get
+            {
+                return _compatibility != null && !string.IsNullOrEmpty(_compatibility.GpuControlPanelSummary)
+                    ? Ui["CompatibilityGpuControlPanelInstalled"]
+                    : Ui["CompatibilityGpuControlPanelNotInstalled"];
+            }
+        }
+
+        public string CompatibilityGpuControlPanelDetails
+        {
+            get
+            {
+                return _compatibility == null || string.IsNullOrEmpty(_compatibility.GpuControlPanelSummary)
+                    ? Ui["CompatibilityNoGpuControlPanels"]
+                    : _compatibility.GpuControlPanelSummary;
+            }
+        }
+
+        public string CompatibilityGpuControlPanelWarning
+        {
+            get
+            {
+                if (_compatibility == null || string.IsNullOrEmpty(_compatibility.GpuControlPanelSummary))
+                    return Ui["CompatibilityGpuControlPanelNoWarning"];
+                return string.Format(Ui["CompatibilityGpuControlPanelWarning"], _compatibility.GpuControlPanelSummary);
+            }
+        }
+
+        public string CompatibilityScaleWarning
+        {
+            get
+            {
+                if (SelectedRecord == null || SelectedRecord.LiveDisplay == null || SelectedRecord.LiveDisplay.CurrentScalePercent < 200)
+                    return string.Empty;
+                return string.Format(Ui["CompatibilityScaleWarning"], SelectedRecord.LiveDisplay.CurrentScalePercent);
+            }
+        }
+
         public DisplayConfigurationRecord SelectedRecord
         {
             get { return _selectedRecord; }
@@ -484,7 +524,7 @@ namespace WinSuperResolution.ViewModels
         public string BuildDiagnosticSummary()
         {
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine("WinSuperResolution v2.5 diagnostic");
+            builder.AppendLine("WinSuperResolution v3.1.0 diagnostic");
             builder.AppendLine("Registered configuration roots: " + Records.Count);
             builder.AppendLine("Writable targets: " + CountTargets());
             foreach (DisplayConfigurationRecord record in Records)
@@ -502,7 +542,7 @@ namespace WinSuperResolution.ViewModels
                 if (!string.IsNullOrEmpty(record.ScanWarning))
                     builder.AppendLine("  Warning: " + record.ScanWarning);
                 EnvironmentCompatibilitySnapshot compatibility = _environmentCompatibilityService.Inspect(record, _virtualDesktopModes);
-                builder.AppendLine("  Compatibility: status=" + compatibility.Status + " | system=" + compatibility.WindowsSummary + " | processor=" + compatibility.ProcessorSummary + " | selectedDisplay=" + compatibility.SelectedDisplaySummary + " | activeGraphics=" + compatibility.GraphicsSummary + " | otherGraphics=" + compatibility.OtherGraphicsSummary + " | detectedGraphics=" + compatibility.DetectedGraphicsSummary + " | activeAdapterMatched=" + compatibility.ActiveAdapterMatched + " | path=" + compatibility.PathSummary + " | reason=" + compatibility.Reason);
+                builder.AppendLine("  Compatibility: status=" + compatibility.Status + " | system=" + compatibility.WindowsSummary + " | processor=" + compatibility.ProcessorSummary + " | selectedDisplay=" + compatibility.SelectedDisplaySummary + " | activeGraphics=" + compatibility.GraphicsSummary + " | otherGraphics=" + compatibility.OtherGraphicsSummary + " | detectedGraphics=" + compatibility.DetectedGraphicsSummary + " | gpuControlPanels=" + compatibility.GpuControlPanelSummary + " | activeAdapterMatched=" + compatibility.ActiveAdapterMatched + " | path=" + compatibility.PathSummary + " | reason=" + compatibility.Reason);
             }
             return builder.ToString();
         }
@@ -621,6 +661,10 @@ namespace WinSuperResolution.ViewModels
             OnPropertyChanged("CompatibilityDriverFreshness");
             OnPropertyChanged("CompatibilityOtherGraphics");
             OnPropertyChanged("CompatibilityDisplayPath");
+            OnPropertyChanged("CompatibilityGpuControlPanels");
+            OnPropertyChanged("CompatibilityGpuControlPanelDetails");
+            OnPropertyChanged("CompatibilityGpuControlPanelWarning");
+            OnPropertyChanged("CompatibilityScaleWarning");
         }
 
         private string LocalizeCurrentModeAvailability()
